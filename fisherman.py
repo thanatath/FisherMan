@@ -9,7 +9,7 @@ from form_text import *
 from logo import *
 
 module_name = 'FisherMan: Extract information from facebook profiles'
-__version__ = "2.0"
+__version__ = "2.1"
 
 
 class Fisher:
@@ -83,32 +83,31 @@ class Fisher:
     def run(self):
         if not self.args.browser:
             if self.args.verb:
-                print('Starting in hidden mode')
+                print(f'[ {color_text("blue", "*")} ] Starting in hidden mode')
             options = FirefoxOptions()
             options.add_argument("--headless")
             navegador = Firefox(options=options)
         else:
             if self.args.verb:
-                print('Opening browser ...')
+                print(f'[ {color_text("white", "*")} ] Opening browser ...')
             navegador = Firefox()
         navegador.get(self.site)
 
         email = navegador.find_element_by_name("email")
         pwd = navegador.find_element_by_name("pass")
         ok = navegador.find_element_by_name("login")
-        classes = ['ii04i59q', 'a3bd9o3v', 'jq4qci2q', 'oo9gr5id',
-                   'dati1w0a', 'tu1s4ah4', 'f7vcsfb0', 'discj3wi']
+        classes = ['f7vcsfb0', 'discj3wi']
 
         email.clear()
         pwd.clear()
         if self.args.email is None or self.args.pwd is None:
             if self.args.verb:
-                print(f'adding email: {self.__fake_email__}')
+                print(f'[ {color_text("white", "*")} ] adding email: {self.__fake_email__}')
                 email.send_keys(self.__fake_email__)
-                print('adding pasword...')
+                print(f'[ {color_text("white", "*")} ] adding pasword...')
                 pwd.send_keys(self.__password__)
             else:
-                print(f'logging into the account: {self.__fake_email__}')
+                print(f'[ {color_text("white", "*")} ] logging into the account: {self.__fake_email__}')
                 email.send_keys(self.__fake_email__)
                 pwd.send_keys(self.__password__)
         else:
@@ -128,7 +127,7 @@ class Fisher:
         for usr in self.args.USERSNAMES:
             if ' ' in usr:
                 usr = str(usr).replace(' ', '.')
-            print(f'Coming in {self.site + usr}')
+            print(f'[ {color_text("white", "*")} ] Coming in {self.site + usr}')
             navegador.get(f'{self.site + usr}/about')
 
             sleep(3)
@@ -140,10 +139,11 @@ class Fisher:
                     print(color_text('red', f'ERROR: {error}'))
                 else:
                     if output:
-                        print(f'[ {color_text("blue", "+")} ] collecting data ...')
-                        self.data.append(output.text)
                         if self.args.verb:
-                            print(output.text)
+                            print(f'[ {color_text("blue", "+")} ] Collecting data from: div.{c}')
+                        else:
+                            print(f'[ {color_text("blue", "+")} ] collecting data ...')
+                        self.data.append(output.text)
                     else:
                         continue
                 sleep(1)
@@ -158,12 +158,16 @@ print()
 if fs.args.out:
     with open('output.txt', 'w+') as file:
         for user in fs.args.USERSNAMES:
-            file.write(user)
-            for st in stuff[6:]:
-                file.write(st)
+            file.writelines('Name and Bio:')
+            file.write(stuff[1])
+            file.write('Overview:')
+            file.write(stuff[0])
     print(f'[ {color_text("green", "+")} ] SUCESS')
 else:
     print(color_text('green', 'Information found:'))
     print('-' * 60)
-    for st in stuff[6:]:
-        print(st)
+    print(f'Name and Bio:')
+    print(stuff[1])
+    print()
+    print('Overview:')
+    print(stuff[0])
