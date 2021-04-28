@@ -22,7 +22,7 @@ usage: fisherman.py [-h] [--version] [--email EMAIL] [--password PASSWORD]
                     [--verbose]
                     USERSNAMES [USERSNAMES ...]
 
-FisherMan: Extract information from facebook profiles (Version 2.0)
+FisherMan: Extract information from facebook profiles (Version 2.1)
 
 positional arguments:
   USERSNAMES            defines one or more users for the search
