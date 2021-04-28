@@ -158,11 +158,13 @@ print()
 if fs.args.out:
     with open('output.txt', 'w+') as file:
         for user in fs.args.USERSNAMES:
-            file.writelines('Name and Bio:')
+            file.write('Name and Bio:\n')
             file.write(stuff[1])
-            file.write('Overview:')
+            file.write('\n')
+            file.write('Overview:\n')
             file.write(stuff[0])
-    print(f'[ {color_text("green", "+")} ] SUCESS')
+            file.write('\n\n')
+    print(f'[ {color_text("green", "+")} ] SUCCESS')
 else:
     print(color_text('green', 'Information found:'))
     print('-' * 60)
