@@ -80,23 +80,27 @@ class Fisher:
         else:
             return users_txt
 
-    def run(self):
+    def main(self):
         if not self.args.browser:
             if self.args.verb:
                 print(f'[ {color_text("blue", "*")} ] Starting in hidden mode')
             options = FirefoxOptions()
             options.add_argument("--headless")
-            navegador = Firefox(options=options)
+            browser = Firefox(options=options)
         else:
             if self.args.verb:
                 print(f'[ {color_text("white", "*")} ] Opening browser ...')
-            navegador = Firefox()
-        navegador.get(self.site)
+            browser = Firefox()
+        self.login(browser)
+        self.scrap(browser)
 
-        email = navegador.find_element_by_name("email")
-        pwd = navegador.find_element_by_name("pass")
-        ok = navegador.find_element_by_name("login")
-        classes = ['f7vcsfb0', 'discj3wi']
+    def login(self, brw):
+
+        brw.get(self.site)
+
+        email = brw.find_element_by_name("email")
+        pwd = brw.find_element_by_name("pass")
+        ok = brw.find_element_by_name("login")
 
         email.clear()
         pwd.clear()
@@ -124,17 +128,20 @@ class Fisher:
         sleep(1)
         if self.args.verb:
             print(f'[ {color_text("green", "+")} ] successfully logged in')
+
+    def scrap(self, brw):
+        classes = ['f7vcsfb0', 'discj3wi']
         for usr in self.args.USERSNAMES:
             if ' ' in usr:
                 usr = str(usr).replace(' ', '.')
             print(f'[ {color_text("white", "*")} ] Coming in {self.site + usr}')
-            navegador.get(f'{self.site + usr}/about')
+            brw.get(f'{self.site + usr}/about')
             temp = []
 
             sleep(3)
             for c in classes:
                 try:
-                    output = navegador.find_element_by_class_name(c)
+                    output = brw.find_element_by_class_name(c)
                 except Exception as error:
                     print(f'[ {color_text("red", "-")} ] class {c} did not return')
                     print(color_text('red', f'ERROR: {error}'))
@@ -149,12 +156,12 @@ class Fisher:
                         continue
                 sleep(1)
             self.data.append(temp)
-        navegador.quit()
+        brw.quit()
 
 
 fs = Fisher()
 fs.update()
-fs.run()
+
 stuff = fs.get_data()
 print()
 if fs.args.out:
