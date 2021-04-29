@@ -17,7 +17,7 @@ class Fisher:
         parser = ArgumentParser(description=f'{module_name} (Version {__version__})',
                                 formatter_class=RawDescriptionHelpFormatter)
 
-        parser.add_argument('USERSNAMES', action='store', nargs='+',
+        parser.add_argument('USERSNAMES', action='store', nargs='+', required=False,
                             help='defines one or more users for the search')
 
         parser.add_argument('--version', action='version',
@@ -80,22 +80,7 @@ class Fisher:
         else:
             return users_txt
 
-    def main(self):
-        if not self.args.browser:
-            if self.args.verb:
-                print(f'[ {color_text("blue", "*")} ] Starting in hidden mode')
-            options = FirefoxOptions()
-            options.add_argument("--headless")
-            browser = Firefox(options=options)
-        else:
-            if self.args.verb:
-                print(f'[ {color_text("white", "*")} ] Opening browser ...')
-            browser = Firefox()
-        self.login(browser)
-        self.scrap(browser)
-
     def login(self, brw):
-
         brw.get(self.site)
 
         email = brw.find_element_by_name("email")
@@ -106,9 +91,9 @@ class Fisher:
         pwd.clear()
         if self.args.email is None or self.args.pwd is None:
             if self.args.verb:
-                print(f'[ {color_text("white", "*")} ] adding email: {self.__fake_email__}')
+                print(f'[ {color_text("white", "*")} ] adding fake email: {self.__fake_email__}')
                 email.send_keys(self.__fake_email__)
-                print(f'[ {color_text("white", "*")} ] adding pasword...')
+                print(f'[ {color_text("white", "*")} ] adding password: ...')
                 pwd.send_keys(self.__password__)
             else:
                 print(f'[ {color_text("white", "*")} ] logging into the account: {self.__fake_email__}')
@@ -118,7 +103,7 @@ class Fisher:
             if self.args.verb:
                 print(f'adding email: {self.args.email}')
                 email.send_keys(self.args.email)
-                print('adding pasword...')
+                print('adding password: ...')
                 pwd.send_keys(self.args.pwd)
             else:
                 print(f'logging into the account: {self.args.email}')
@@ -127,14 +112,14 @@ class Fisher:
         ok.click()
         sleep(1)
         if self.args.verb:
-            print(f'[ {color_text("green", "+")} ] successfully logged in')
+            print(f'[{color_text("green", "+")}] successfully logged in')
 
-    def scrap(self, brw):
+    def scrap(self, brw, *args):
         classes = ['f7vcsfb0', 'discj3wi']
-        for usr in self.args.USERSNAMES:
+        for usr in args:
             if ' ' in usr:
                 usr = str(usr).replace(' ', '.')
-            print(f'[ {color_text("white", "*")} ] Coming in {self.site + usr}')
+            print(f'[{color_text("white", "*")}] Coming in {self.site + usr}')
             brw.get(f'{self.site + usr}/about')
             temp = []
 
@@ -143,25 +128,40 @@ class Fisher:
                 try:
                     output = brw.find_element_by_class_name(c)
                 except Exception as error:
-                    print(f'[ {color_text("red", "-")} ] class {c} did not return')
+                    print(f'[{color_text("red", "-")}] class {c} did not return')
                     print(color_text('red', f'ERROR: {error}'))
                 else:
                     if output:
                         if self.args.verb:
-                            print(f'[ {color_text("blue", "+")} ] Collecting data from: div.{c}')
+                            print(f'[{color_text("blue", "+")}] Collecting data from: div.{c}')
                         else:
-                            print(f'[ {color_text("blue", "+")} ] collecting data ...')
+                            print(f'[{color_text("blue", "+")}] collecting data ...')
                             temp.append(output.text)
                     else:
                         continue
                 sleep(1)
             self.data.append(temp)
-        brw.quit()
+
+    def main(self):
+        if not self.args.browser:
+            if self.args.verb:
+                print(f'[{color_text("blue", "*")}] Starting in hidden mode')
+            options = FirefoxOptions()
+            options.add_argument("--headless")
+            browser = Firefox(options=options)
+        else:
+            if self.args.verb:
+                print(f'[{color_text("white", "*")}] Opening browser ...')
+            browser = Firefox()
+        self.login(browser)
+        self.scrap(browser, self.args.USERSNAMES, self.upload_txt_file())
+
+        browser.quit()
 
 
 fs = Fisher()
 fs.update()
-
+fs.main()
 stuff = fs.get_data()
 print()
 if fs.args.out:
