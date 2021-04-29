@@ -9,7 +9,7 @@ from form_text import *
 from logo import *
 
 module_name = 'FisherMan: Extract information from facebook profiles'
-__version__ = "2.1"
+__version__ = "0.2.2"
 
 
 class Fisher:
@@ -129,6 +129,7 @@ class Fisher:
                 usr = str(usr).replace(' ', '.')
             print(f'[ {color_text("white", "*")} ] Coming in {self.site + usr}')
             navegador.get(f'{self.site + usr}/about')
+            temp = []
 
             sleep(3)
             for c in classes:
@@ -143,10 +144,11 @@ class Fisher:
                             print(f'[ {color_text("blue", "+")} ] Collecting data from: div.{c}')
                         else:
                             print(f'[ {color_text("blue", "+")} ] collecting data ...')
-                        self.data.append(output.text)
+                            temp.append(output.text)
                     else:
                         continue
                 sleep(1)
+            self.data.append(temp)
         navegador.quit()
 
 
@@ -158,18 +160,14 @@ print()
 if fs.args.out:
     with open('output.txt', 'w+') as file:
         for user in fs.args.USERSNAMES:
-            file.write('Name and Bio:\n')
-            file.write(stuff[1])
-            file.write('\n')
-            file.write('Overview:\n')
-            file.write(stuff[0])
+            for data_list in stuff:
+                for data in data_list:
+                    file.write(f'{data}\n')
             file.write('\n\n')
-    print(f'[ {color_text("green", "+")} ] SUCCESS')
+    print(f'[{color_text("green", "+")}] SUCCESS')
 else:
     print(color_text('green', 'Information found:'))
     print('-' * 60)
-    print(f'Name and Bio:')
-    print(stuff[1])
-    print()
-    print('Overview:')
-    print(stuff[0])
+    for data_list in stuff:
+        for data in data_list:
+            print(data)
