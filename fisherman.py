@@ -9,7 +9,7 @@ from form_text import *
 from logo import *
 
 module_name = 'FisherMan: Extract information from facebook profiles'
-__version__ = "0.2.2"
+__version__ = "1.0.0"
 
 
 class Fisher:
@@ -17,25 +17,23 @@ class Fisher:
         parser = ArgumentParser(description=f'{module_name} (Version {__version__})',
                                 formatter_class=RawDescriptionHelpFormatter)
 
-        parser.add_argument('USERSNAMES', action='store', nargs='+', required=False,
+        parser.add_argument('USERSNAMES', action='store', nargs='+',
                             help='defines one or more users for the search')
 
-        parser.add_argument('--version', action='version',
-                            version=f'%(prog)s {__version__}', help='Shows the current version of the program.')
+        parser.add_argument('--version', action='version', version=f'%(prog)s {__version__}',
+                            help='Shows the current version of the program.')
+
+        parser.add_argument('--browser', '-b', action='store_true', dest='browser', required=False,
+                            help='Opens the browser / bot')
 
         parser.add_argument('--email', action='store', metavar='EMAIL', dest='email',
                             required=False,
                             help='If the profile is blocked, you can define your account, '
                                  'however you have the search user in your friends list.')
 
-        parser.add_argument('--password', action='store', metavar='PASSWORD', dest='pwd',
-                            required=False,
+        parser.add_argument('--password', action='store', metavar='PASSWORD', dest='pwd', required=False,
                             help='Set the password for your facebook account, '
                                  'this parameter has to be used with --email.')
-
-        parser.add_argument('--browser', '-b', action='store_true', dest='browser',
-                            required=False,
-                            help='Opens the browser / bot')
 
         parser.add_argument('--use-txt', action='store', required=False, dest='txt', metavar='TXT_FILE',
                             help='Replaces the USERSNAMES parameter with a user list in a txt')
@@ -47,7 +45,7 @@ class Fisher:
                             help='It shows in detail the data search process')
 
         self.args = parser.parse_args()
-        self.site = 'https://facebook.com/'
+        self.url = 'https://facebook.com/'
         self.__fake_email__ = 'submarino.sub.aquatico@outlook.com'
         self.__password__ = '0cleptomaniaco0'
         self.data = []
@@ -81,7 +79,7 @@ class Fisher:
             return users_txt
 
     def login(self, brw):
-        brw.get(self.site)
+        brw.get(self.url)
 
         email = brw.find_element_by_name("email")
         pwd = brw.find_element_by_name("pass")
@@ -110,7 +108,6 @@ class Fisher:
                 email.send_keys(self.args.email)
                 pwd.send_keys(self.args.pwd)
         ok.click()
-        sleep(1)
         if self.args.verb:
             print(f'[{color_text("green", "+")}] successfully logged in')
 
@@ -119,8 +116,9 @@ class Fisher:
         for usr in args:
             if ' ' in usr:
                 usr = str(usr).replace(' ', '.')
-            print(f'[{color_text("white", "*")}] Coming in {self.site + usr}')
-            brw.get(f'{self.site + usr}/about')
+            print(f'[{color_text("white", "*")}] Coming in {self.url + usr}')
+            brw.get(f'{self.url + usr}/about')
+            print(f'[{color_text("green", "+")}] successfully...')
             temp = []
 
             sleep(3)
@@ -159,22 +157,23 @@ class Fisher:
         browser.quit()
 
 
-fs = Fisher()
-fs.update()
-fs.main()
-stuff = fs.get_data()
-print()
-if fs.args.out:
-    with open('output.txt', 'w+') as file:
-        for user in fs.args.USERSNAMES:
-            for data_list in stuff:
-                for data in data_list:
-                    file.write(f'{data}\n')
-            file.write('\n\n')
-    print(f'[{color_text("green", "+")}] SUCCESS')
-else:
-    print(color_text('green', 'Information found:'))
-    print('-' * 60)
-    for data_list in stuff:
-        for data in data_list:
-            print(data)
+if __name__ == '__main__':
+    fs = Fisher()
+    fs.update()
+    fs.main()
+    stuff = fs.get_data()
+    print()
+    if fs.args.out:
+        with open('output.txt', 'w+') as file:
+            for user in fs.args.USERSNAMES:
+                for data_list in stuff:
+                    for data in data_list:
+                        file.write(f'{data}\n')
+                file.write('\n\n')
+        print(f'[{color_text("green", "+")}] SUCCESS')
+    else:
+        print(color_text('green', 'Information found:'))
+        print('-' * 60)
+        for data_list in stuff:
+            for data in data_list:
+                print(data)
