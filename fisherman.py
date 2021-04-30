@@ -1,7 +1,9 @@
 #! /usr/bin/env python3
 
 from selenium.webdriver import Firefox, FirefoxOptions
-from time import sleep
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.common.by import By
 from argparse import ArgumentParser, RawDescriptionHelpFormatter
 from requests import get
 from re import findall
@@ -9,7 +11,7 @@ from form_text import *
 from logo import *
 
 module_name = 'FisherMan: Extract information from facebook profiles'
-__version__ = "1.0.0"
+__version__ = "1.0.1"
 
 
 class Fisher:
@@ -82,9 +84,9 @@ class Fisher:
     def login(self, brw):
         brw.get(self.url)
 
-        email = brw.find_element_by_name("email")
-        pwd = brw.find_element_by_name("pass")
-        ok = brw.find_element_by_name("login")
+        email = WebDriverWait(brw, 10).until(EC.presence_of_element_located((By.NAME, "email")))
+        pwd = WebDriverWait(brw, 10).until(EC.presence_of_element_located((By.NAME, "pass")))
+        ok = WebDriverWait(brw, 10).until(EC.presence_of_element_located((By.NAME, "login")))
 
         email.clear()
         pwd.clear()
@@ -121,23 +123,18 @@ class Fisher:
             brw.get(f'{self.url + usr}/about')
             temp = []
 
-            sleep(3)
             for c in classes:
                 try:
-                    output = brw.find_element_by_class_name(c)
+                    output = WebDriverWait(brw, 10).until(EC.presence_of_element_located((By.CLASS_NAME, c)))
                 except Exception as error:
                     print(f'[{color_text("red", "-")}] class {c} did not return')
                     print(color_text('red', f'ERROR: {error}'))
                 else:
-                    if output:
-                        if self.args.verb:
-                            print(f'[{color_text("blue", "+")}] Collecting data from: div.{c}')
-                        else:
-                            print(f'[{color_text("blue", "+")}] collecting data ...')
-                            temp.append(output.text)
+                    if self.args.verb:
+                        print(f'[{color_text("blue", "+")}] Collecting data from: div.{c}')
                     else:
-                        continue
-                sleep(1)
+                        print(f'[{color_text("blue", "+")}] collecting data ...')
+                    temp.append(output.text)
             self.data.append(temp)
 
     def main(self):
