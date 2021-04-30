@@ -17,34 +17,33 @@ $ python3 -m pip install -r requirements.txt
 ## Usage
 ```
 $ python3 fisherman.py --help
-usage: fisherman.py [-h] [--version] [--email EMAIL] [--password PASSWORD]
-                    [--browser] [--use-txt TXT_FILE] [--file-output]
-                    [--verbose]
-                    USERSNAMES [USERSNAMES ...]
+usage: fisherman.py [-h] [--username USERSNAMES [USERSNAMES ...]]
+                    [--version] [--browser] [--email EMAIL]
+                    [--password PASSWORD] [--use-txt TXT_FILE]
+                    [--file-output] [--verbose]
 
-FisherMan: Extract information from facebook profiles (Version 2.1)
-
-positional arguments:
-  USERSNAMES            defines one or more users for the search
+FisherMan: Extract information from facebook profiles (Version 1.0.0)
 
 optional arguments:
   -h, --help            show this help message and exit
+  --username USERSNAMES [USERSNAMES ...], -u USERSNAMES [USERSNAMES ...]
+                        defines one or more users for the search
   --version             Shows the current version of the program.
-  --email EMAIL         If the profile is blocked, you can define your
-                        account, however you have the search user in your
-                        friends list.
-  --password PASSWORD   Set the password for your facebook account, this
-                        parameter has to be used with --email.
   --browser, -b         Opens the browser / bot
-  --use-txt TXT_FILE    Replaces the USERSNAMES parameter with a user list in
-                        a txt
+  --email EMAIL         If the profile is blocked, you can define
+                        your account, however you have the search
+                        user in your friends list.
+  --password PASSWORD   Set the password for your facebook account,
+                        this parameter has to be used with --email.
+  --use-txt TXT_FILE    Replaces the USERSNAMES parameter with a
+                        user list in a txt
   --file-output, -o     Save the output data to a .txt file
   --verbose, -v, -d, --debug
                         It shows in detail the data search process
 ```
 To search for a user
 ```
-python3 fisherman.py name.surname name2.surname2 name3.surname3
+python3 fisherman.py --username user user.name user2.name2
 ```
 
 the username must be found on the facebook profile link, such as:
@@ -59,7 +58,7 @@ python3 fisherman.py --use-txt filename.txt
 
 And with that you can send the output to a txt also using: 
 ```
-python3 fisheman.py --file-output
+python3 fisheman.py --username name --file-output
 ```
 
 Some profiles are limited to displaying your information for any account, so you can use your account to extract.

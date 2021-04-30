@@ -17,7 +17,8 @@ class Fisher:
         parser = ArgumentParser(description=f'{module_name} (Version {__version__})',
                                 formatter_class=RawDescriptionHelpFormatter)
 
-        parser.add_argument('USERSNAMES', action='store', nargs='+',
+        parser.add_argument('--username', '-u', action='store', nargs='+', required=False, dest='usersnames',
+                            metavar='USERSNAMES',
                             help='defines one or more users for the search')
 
         parser.add_argument('--version', action='version', version=f'%(prog)s {__version__}',
@@ -89,12 +90,12 @@ class Fisher:
         pwd.clear()
         if self.args.email is None or self.args.pwd is None:
             if self.args.verb:
-                print(f'[ {color_text("white", "*")} ] adding fake email: {self.__fake_email__}')
+                print(f'[{color_text("white", "*")}] adding fake email: {self.__fake_email__}')
                 email.send_keys(self.__fake_email__)
-                print(f'[ {color_text("white", "*")} ] adding password: ...')
+                print(f'[{color_text("white", "*")}] adding password: ...')
                 pwd.send_keys(self.__password__)
             else:
-                print(f'[ {color_text("white", "*")} ] logging into the account: {self.__fake_email__}')
+                print(f'[{color_text("white", "*")}] logging into the account: {self.__fake_email__}')
                 email.send_keys(self.__fake_email__)
                 pwd.send_keys(self.__password__)
         else:
@@ -111,14 +112,13 @@ class Fisher:
         if self.args.verb:
             print(f'[{color_text("green", "+")}] successfully logged in')
 
-    def scrap(self, brw, *args):
-        classes = ['f7vcsfb0', 'discj3wi']
-        for usr in args:
+    def scrap(self, brw, items):
+        classes = ['discj3wi', 'f7vcsfb0']
+        for usr in items:
             if ' ' in usr:
                 usr = str(usr).replace(' ', '.')
             print(f'[{color_text("white", "*")}] Coming in {self.url + usr}')
             brw.get(f'{self.url + usr}/about')
-            print(f'[{color_text("green", "+")}] successfully...')
             temp = []
 
             sleep(3)
@@ -152,7 +152,10 @@ class Fisher:
                 print(f'[{color_text("white", "*")}] Opening browser ...')
             browser = Firefox()
         self.login(browser)
-        self.scrap(browser, self.args.USERSNAMES, self.upload_txt_file())
+        if self.args.usersnames is None:
+            self.scrap(browser, self.upload_txt_file())
+        else:
+            self.scrap(browser, self.args.usersnames)
 
         browser.quit()
 
@@ -165,11 +168,12 @@ if __name__ == '__main__':
     print()
     if fs.args.out:
         with open('output.txt', 'w+') as file:
-            for user in fs.args.USERSNAMES:
-                for data_list in stuff:
-                    for data in data_list:
-                        file.write(f'{data}\n')
+            for data_list in stuff:
+                for data in data_list:
+                    file.write(data)
+                    file.write('\n\n')
                 file.write('\n\n')
+            file.write('\n')
         print(f'[{color_text("green", "+")}] SUCCESS')
     else:
         print(color_text('green', 'Information found:'))
@@ -177,3 +181,4 @@ if __name__ == '__main__':
         for data_list in stuff:
             for data in data_list:
                 print(data)
+                print()
