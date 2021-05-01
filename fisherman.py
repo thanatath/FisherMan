@@ -7,11 +7,12 @@ from selenium.webdriver.common.by import By
 from argparse import ArgumentParser, RawDescriptionHelpFormatter
 from requests import get
 from re import findall
+import datetime
 from form_text import *
 from logo import *
 
 module_name = 'FisherMan: Extract information from facebook profiles'
-__version__ = "1.0.1"
+__version__ = "1.0.2"
 
 
 class Fisher:
@@ -164,7 +165,7 @@ if __name__ == '__main__':
     stuff = fs.get_data()
     print()
     if fs.args.out:
-        with open('output.txt', 'w+') as file:
+        with open(f'{datetime.datetime.now()}.txt', 'w+') as file:
             for data_list in stuff:
                 for data in data_list:
                     file.write(data)
