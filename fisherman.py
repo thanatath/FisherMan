@@ -12,16 +12,16 @@ from form_text import *
 from logo import *
 
 module_name = 'FisherMan: Extract information from facebook profiles'
-__version__ = "1.0.2"
+__version__ = "2.0.0"
+
 
 
 class Fisher:
     def __init__(self):
-        parser = ArgumentParser(description=f'{module_name} (Version {__version__})',
-                                formatter_class=RawDescriptionHelpFormatter)
+        parser = ArgumentParser(description=f'{module_name} (Version {__version__})', formatter_class=RawDescriptionHelpFormatter)
 
         parser.add_argument('--username', '-u', action='store', nargs='+', required=False, dest='usersnames',
-                            metavar='USERSNAMES',
+                            metavar='USERSNAMES', type=str,
                             help='defines one or more users for the search')
 
         parser.add_argument('--version', action='version', version=f'%(prog)s {__version__}',
@@ -31,15 +31,15 @@ class Fisher:
                             help='Opens the browser / bot')
 
         parser.add_argument('--email', action='store', metavar='EMAIL', dest='email',
-                            required=False,
+                            required=False, type=str,
                             help='If the profile is blocked, you can define your account, '
                                  'however you have the search user in your friends list.')
 
-        parser.add_argument('--password', action='store', metavar='PASSWORD', dest='pwd', required=False,
+        parser.add_argument('--password', action='store', metavar='PASSWORD', dest='pwd', required=False, type=str,
                             help='Set the password for your facebook account, '
                                  'this parameter has to be used with --email.')
 
-        parser.add_argument('--use-txt', action='store', required=False, dest='txt', metavar='TXT_FILE',
+        parser.add_argument('--use-txt', action='store', required=False, dest='txt', metavar='TXT_FILE', type=str,
                             help='Replaces the USERSNAMES parameter with a user list in a txt')
 
         parser.add_argument('--file-output', '-o', action='store_true', required=False, dest='out',
@@ -116,27 +116,25 @@ class Fisher:
             print(f'[{color_text("green", "+")}] successfully logged in')
 
     def scrap(self, brw, items):
-        classes = ['discj3wi', 'f7vcsfb0']
+        branch = ['/about', '/about_contact_and_basic_info', '/about_family_and_relationships', '/about_details', '/about_work_and_education', '/about_places']
         for usr in items:
             if ' ' in usr:
                 usr = str(usr).replace(' ', '.')
             print(f'[{color_text("white", "*")}] Coming in {self.url + usr}')
-            brw.get(f'{self.url + usr}/about')
-            temp = []
+            for bn in branch:
+                brw.get(f'{self.url + usr + bn}')
 
-            for c in classes:
                 try:
-                    output = WebDriverWait(brw, 10).until(EC.presence_of_element_located((By.CLASS_NAME, c)))
+                    output = WebDriverWait(brw, 10).until(EC.presence_of_element_located((By.CLASS_NAME, 'f7vcsfb0')))
                 except Exception as error:
-                    print(f'[{color_text("red", "-")}] class {c} did not return')
+                    print(f'[{color_text("red", "-")}] class f7vcsfb0 did not return')
                     print(color_text('red', f'ERROR: {error}'))
                 else:
                     if self.args.verb:
-                        print(f'[{color_text("blue", "+")}] Collecting data from: div.{c}')
+                        print(f'[{color_text("blue", "+")}] Collecting data from: div.f7vcsfb0')
                     else:
                         print(f'[{color_text("blue", "+")}] collecting data ...')
-                    temp.append(output.text)
-            self.data.append(temp)
+                        self.data.append(output.text)
 
     def main(self):
         if not self.args.browser:
@@ -165,11 +163,9 @@ if __name__ == '__main__':
     stuff = fs.get_data()
     print()
     if fs.args.out:
-        with open(f'{datetime.datetime.now()}.txt', 'w+') as file:
+        with open(f'{datetime.datetime.now()}.txt', 'a+') as file:
             for data_list in stuff:
-                for data in data_list:
-                    file.write(data)
-                    file.write('\n\n')
+                file.write(data)
                 file.write('\n\n')
             file.write('\n')
         print(f'[{color_text("green", "+")}] SUCCESS')
@@ -177,6 +173,5 @@ if __name__ == '__main__':
         print(color_text('green', 'Information found:'))
         print('-' * 60)
         for data_list in stuff:
-            for data in data_list:
-                print(data)
-                print()
+            print(data_list)
+            print()

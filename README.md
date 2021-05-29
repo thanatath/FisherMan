@@ -22,7 +22,7 @@ usage: fisherman.py [-h] [--username USERSNAMES [USERSNAMES ...]]
                     [--password PASSWORD] [--use-txt TXT_FILE]
                     [--file-output] [--verbose]
 
-FisherMan: Extract information from facebook profiles (Version 1.0.2)
+FisherMan: Extract information from facebook profiles (Version 2.0.0)
 
 optional arguments:
   -h, --help            show this help message and exit
