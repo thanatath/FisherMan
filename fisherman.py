@@ -12,7 +12,7 @@ from form_text import *
 from logo import *
 
 module_name = 'FisherMan: Extract information from facebook profiles'
-__version__ = "2.0.0"
+__version__ = "2.1.0"
 
 
 
@@ -20,12 +20,12 @@ class Fisher:
     def __init__(self):
         parser = ArgumentParser(description=f'{module_name} (Version {__version__})', formatter_class=RawDescriptionHelpFormatter)
 
+        parser.add_argument('--version', action='version', version=f'%(prog)s {__version__}',
+                            help='Shows the current version of the program.')
+
         parser.add_argument('--username', '-u', action='store', nargs='+', required=False, dest='usersnames',
                             metavar='USERSNAMES', type=str,
                             help='defines one or more users for the search')
-
-        parser.add_argument('--version', action='version', version=f'%(prog)s {__version__}',
-                            help='Shows the current version of the program.')
 
         parser.add_argument('--browser', '-b', action='store_true', dest='browser', required=False,
                             help='Opens the browser / bot')
@@ -163,11 +163,11 @@ if __name__ == '__main__':
     stuff = fs.get_data()
     print()
     if fs.args.out:
-        with open(f'{datetime.datetime.now()}.txt', 'a+') as file:
-            for data_list in stuff:
-                file.write(data)
-                file.write('\n\n')
-            file.write('\n')
+        for usr in fs.args.usersnames:
+            with open(f'{usr}-{str(datetime.datetime.now())[:16]}.txt', 'a+') as file:
+                for data_list in stuff:
+                    file.write(data_list)
+                    file.write('\n\n')
         print(f'[{color_text("green", "+")}] SUCCESS')
     else:
         print(color_text('green', 'Information found:'))
