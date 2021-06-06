@@ -53,6 +53,7 @@ class Fisher:
         self.__fake_email__ = 'submarino.sub.aquatico@outlook.com'
         self.__password__ = '0cleptomaniaco0'
         self.data = []
+        self.affluent = []
         print(color_text('white', name))
 
     @staticmethod
@@ -118,10 +119,11 @@ class Fisher:
     def scrap(self, brw, items):
         branch = ['/about', '/about_contact_and_basic_info', '/about_family_and_relationships', '/about_details', '/about_work_and_education', '/about_places']
         for usr in items:
+            temp_data = []
             if ' ' in usr:
                 usr = str(usr).replace(' ', '.')
             print(f'[{color_text("white", "*")}] Coming in {self.url + usr}')
-            for bn in branch:
+            for c, bn in enumerate(branch):
                 brw.get(f'{self.url + usr + bn}')
 
                 try:
@@ -134,7 +136,35 @@ class Fisher:
                         print(f'[{color_text("blue", "+")}] Collecting data from: div.f7vcsfb0')
                     else:
                         print(f'[{color_text("blue", "+")}] collecting data ...')
-                        self.data.append(output.text)
+                        temp_data.append(output.text)
+                        if c == 2:
+                            members = output.find_elements(By.TAG_NAME, "a")
+                            if members:
+                                get_data_members = str(input(f'[{color_text("yellow", "+")}] I can still get data from family members found in this profile. Do you wish to continue? [y/n]: ')).strip().lower()[0]
+                                if get_data_members == 'y':
+                                    for link in members:
+                                        self.affluent.append(link.get_attribute('href'))
+            if self.affluent:
+                for memb in self.affluent:
+                    print()
+                    print(f'[{color_text("white", "*")}] Coming in {self.url + memb}')
+                    temp_data.append('='*50)
+                    temp_data.append('='*50)
+                    for bn in branch:
+                        brw.get(f'{memb + bn}')
+
+                        try:
+                            output2 = WebDriverWait(brw, 10).until(EC.presence_of_element_located((By.CLASS_NAME, 'f7vcsfb0')))
+                        except Exception as error:
+                            print(f'[{color_text("red", "-")}] class f7vcsfb0 did not return')
+                            print(color_text('red', f'ERROR: {error}'))
+                        else:
+                            if self.args.verb:
+                                print(f'[{color_text("blue", "+")}] Collecting data from: div.f7vcsfb0')
+                            else:
+                                print(f'[{color_text("blue", "+")}] collecting data ...')
+                                temp_data.append(output2.text)
+            self.data.append(temp_data)
 
     def main(self):
         if not self.args.browser:
@@ -166,12 +196,17 @@ if __name__ == '__main__':
         for usr in fs.args.usersnames:
             with open(f'{usr}-{str(datetime.datetime.now())[:16]}.txt', 'a+') as file:
                 for data_list in stuff:
-                    file.write(data_list)
-                    file.write('\n\n')
+                    for data in data_list:
+                        file.write(data)
+                        file.write('\n')
+                        file.write('-'*50)
+                        file.write('\n\n')
         print(f'[{color_text("green", "+")}] SUCCESS')
     else:
         print(color_text('green', 'Information found:'))
         print('-' * 60)
         for data_list in stuff:
-            print(data_list)
-            print()
+            for data in data_list:
+                print(data)
+                print()
+                print('-'*50)
