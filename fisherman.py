@@ -12,7 +12,7 @@ from form_text import *
 from logo import *
 
 module_name = 'FisherMan: Extract information from facebook profiles'
-__version__ = "2.1.1"
+__version__ = "2.2.0"
 
 
 class Fisher:
@@ -124,8 +124,6 @@ class Fisher:
                   '/about_work_and_education', '/about_places']
         for usrs in items:
             temp_data = []
-            if ' ' in usrs:
-                usrs = str(usrs).replace(' ', '.')
             print(f'[{color_text("white", "*")}] Coming in {self.url + usrs}')
             for c, bn in enumerate(branch):
                 brw.get(f'{self.url + usrs + bn}')
@@ -139,13 +137,12 @@ class Fisher:
                         print(f'[{color_text("blue", "+")}] Collecting data from: div.f7vcsfb0')
                     else:
                         print(f'[{color_text("blue", "+")}] collecting data ...')
-                        temp_data.append(output.text)
-                        if c == 2:
-                            members = output.find_elements(By.TAG_NAME, "a")
-                            if members:
-                                if self.args.scrpfm:
-                                    for link in members:
-                                        self.affluent.append(link.get_attribute('href'))
+                    temp_data.append(output.text)
+                    if c == 2:
+                        members = output.find_elements(By.TAG_NAME, "a")
+                        if members and self.args.scrpfm:
+                            for link in members:
+                                self.affluent.append(link.get_attribute('href'))
             if self.affluent:
                 for memb in self.affluent:
                     print()
@@ -164,7 +161,7 @@ class Fisher:
                                 print(f'[{color_text("blue", "+")}] Collecting data from: div.f7vcsfb0')
                             else:
                                 print(f'[{color_text("blue", "+")}] collecting data ...')
-                                temp_data.append(output2.text)
+                            temp_data.append(output2.text)
             self.data.append(temp_data)
 
     def main(self):
@@ -194,14 +191,24 @@ if __name__ == '__main__':
     stuff = fs.get_data()
     print()
     if fs.args.out:
-        for usr in fs.args.usersnames:
-            with open(f'{usr}-{str(datetime.datetime.now())[:16]}.txt', 'a+') as file:
-                for data_list in stuff:
-                    for data in data_list:
-                        file.write(data)
-                        file.write('\n')
-                        file.write('-' * 50)
-                        file.write('\n\n')
+        if fs.args.usersnames is None:
+            for usr in fs.upload_txt_file():
+                with open(f'"{usr}-{str(datetime.datetime.now())[:16]}".txt', 'a+') as file:
+                    for data_list in stuff:
+                        for data in data_list:
+                            file.write(data)
+                            file.write('\n')
+                            file.write('-' * 50)
+                            file.write('\n\n')
+        else:
+            for usr2 in fs.args.usersnames:
+                with open(f'"{usr2}-{str(datetime.datetime.now())[:16]}".txt', 'a+') as file:
+                    for data_list in stuff:
+                        for data in data_list:
+                            file.write(data)
+                            file.write('\n')
+                            file.write('-' * 50)
+                            file.write('\n\n')
         print(f'[{color_text("green", "+")}] SUCCESS')
     else:
         print(color_text('green', 'Information found:'))

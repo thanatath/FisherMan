@@ -1,4 +1,4 @@
-# FisherMan [![GitHub license](https://img.shields.io/github/license/Godofcoffe/FisherMan)](https://github.com/Godofcoffe/FisherMan/blob/main/LICENSE) ![badge](https://img.shields.io/badge/version-2.1.1-blue)  ![badge](https://img.shields.io/badge/python-%3E%3D3.8-green)
+# FisherMan [![GitHub license](https://img.shields.io/github/license/Godofcoffe/FisherMan)](https://github.com/Godofcoffe/FisherMan/blob/main/LICENSE) ![badge](https://img.shields.io/badge/version-2.2.0-blue)  ![badge](https://img.shields.io/badge/python-%3E%3D3.8-green)
 
 Search for public profile information on Facebook
 
