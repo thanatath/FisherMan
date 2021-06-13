@@ -17,29 +17,31 @@ $ python3 -m pip install -r requirements.txt
 ## Usage
 ```
 $ python3 fisherman.py --help
-usage: fisherman.py [-h] [--username USERSNAMES [USERSNAMES ...]]
-                    [--version] [--browser] [--email EMAIL]
-                    [--password PASSWORD] [--use-txt TXT_FILE]
-                    [--file-output] [--verbose]
+usage: fisherman.py [-h] [--version] [--username USERSNAMES [USERSNAMES ...]]
+                    [--scrape-family] [--browser] [--email EMAIL]
+                    [--password PASSWORD] [--use-txt TXT_FILE] [--file-output]
+                    [--verbose]
 
-FisherMan: Extract information from facebook profiles (Version 2.1.1)
+FisherMan: Extract information from facebook profiles (Version 2.2.0)
 
 optional arguments:
   -h, --help            show this help message and exit
-  --username USERSNAMES [USERSNAMES ...], -u USERSNAMES [USERSNAMES ...]
-                        defines one or more users for the search
   --version             Shows the current version of the program.
-  --browser, -b         Opens the browser / bot
-  --email EMAIL         If the profile is blocked, you can define
-                        your account, however you have the search
-                        user in your friends list.
-  --password PASSWORD   Set the password for your facebook account,
-                        this parameter has to be used with --email.
-  --use-txt TXT_FILE    Replaces the USERSNAMES parameter with a
-                        user list in a txt
-  --file-output, -o     Save the output data to a .txt file
+  --username USERSNAMES [USERSNAMES ...], -u USERSNAMES [USERSNAMES ...]
+                        defines one or more users for the search.
+  --scrape-family       If this parameter is passed, the information from
+                        family members will be scraped if available.
+  --browser, -b         Opens the browser / bot.
+  --email EMAIL         If the profile is blocked, you can define your
+                        account, however you have the search user in your
+                        friends list.
+  --password PASSWORD   Set the password for your facebook account, this
+                        parameter has to be used with --email.
+  --use-txt TXT_FILE    Replaces the USERSNAMES parameter with a user list in
+                        a txt.
+  --file-output, -o     Save the output data to a .txt file.
   --verbose, -v, -d, --debug
-                        It shows in detail the data search process
+                        It shows in detail the data search process.
 ```
 To search for a user
 ```
