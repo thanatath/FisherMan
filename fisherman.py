@@ -2,9 +2,9 @@
 
 from selenium.webdriver import Firefox, FirefoxOptions
 from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support import expected_conditions as ec
 from selenium.webdriver.common.by import By
-from argparse import ArgumentParser, RawDescriptionHelpFormatter
+from argparse import ArgumentParser
 from requests import get
 from re import findall
 import datetime
@@ -12,23 +12,26 @@ from form_text import *
 from logo import *
 
 module_name = 'FisherMan: Extract information from facebook profiles'
-__version__ = "2.1.0"
-
+__version__ = "2.1.1"
 
 
 class Fisher:
     def __init__(self):
-        parser = ArgumentParser(description=f'{module_name} (Version {__version__})', formatter_class=RawDescriptionHelpFormatter)
+        parser = ArgumentParser(description=f'{module_name} (Version {__version__})')
 
         parser.add_argument('--version', action='version', version=f'%(prog)s {__version__}',
                             help='Shows the current version of the program.')
 
         parser.add_argument('--username', '-u', action='store', nargs='+', required=False, dest='usersnames',
                             metavar='USERSNAMES', type=str,
-                            help='defines one or more users for the search')
+                            help='defines one or more users for the search.')
+
+        parser.add_argument('--scrape-family', action='store_true', required=False, dest='scrpfm',
+                            help='If this parameter is passed, '
+                                 'the information from family members will be scraped if available.')
 
         parser.add_argument('--browser', '-b', action='store_true', dest='browser', required=False,
-                            help='Opens the browser / bot')
+                            help='Opens the browser / bot.')
 
         parser.add_argument('--email', action='store', metavar='EMAIL', dest='email',
                             required=False, type=str,
@@ -40,13 +43,13 @@ class Fisher:
                                  'this parameter has to be used with --email.')
 
         parser.add_argument('--use-txt', action='store', required=False, dest='txt', metavar='TXT_FILE', type=str,
-                            help='Replaces the USERSNAMES parameter with a user list in a txt')
+                            help='Replaces the USERSNAMES parameter with a user list in a txt.')
 
         parser.add_argument('--file-output', '-o', action='store_true', required=False, dest='out',
-                            help='Save the output data to a .txt file')
+                            help='Save the output data to a .txt file.')
 
         parser.add_argument('--verbose', '-v', '-d', '--debug', action='store_true', required=False, dest='verb',
-                            help='It shows in detail the data search process')
+                            help='It shows in detail the data search process.')
 
         self.args = parser.parse_args()
         self.url = 'https://facebook.com/'
@@ -86,9 +89,9 @@ class Fisher:
     def login(self, brw):
         brw.get(self.url)
 
-        email = WebDriverWait(brw, 10).until(EC.presence_of_element_located((By.NAME, "email")))
-        pwd = WebDriverWait(brw, 10).until(EC.presence_of_element_located((By.NAME, "pass")))
-        ok = WebDriverWait(brw, 10).until(EC.presence_of_element_located((By.NAME, "login")))
+        email = WebDriverWait(brw, 10).until(ec.presence_of_element_located((By.NAME, "email")))
+        pwd = WebDriverWait(brw, 10).until(ec.presence_of_element_located((By.NAME, "pass")))
+        ok = WebDriverWait(brw, 10).until(ec.presence_of_element_located((By.NAME, "login")))
 
         email.clear()
         pwd.clear()
@@ -116,21 +119,21 @@ class Fisher:
         if self.args.verb:
             print(f'[{color_text("green", "+")}] successfully logged in')
 
-    def scrap(self, brw, items):
-        branch = ['/about', '/about_contact_and_basic_info', '/about_family_and_relationships', '/about_details', '/about_work_and_education', '/about_places']
-        for usr in items:
+    def scrape(self, brw, items):
+        branch = ['/about', '/about_contact_and_basic_info', '/about_family_and_relationships', '/about_details',
+                  '/about_work_and_education', '/about_places']
+        for usrs in items:
             temp_data = []
-            if ' ' in usr:
-                usr = str(usr).replace(' ', '.')
-            print(f'[{color_text("white", "*")}] Coming in {self.url + usr}')
+            if ' ' in usrs:
+                usrs = str(usrs).replace(' ', '.')
+            print(f'[{color_text("white", "*")}] Coming in {self.url + usrs}')
             for c, bn in enumerate(branch):
-                brw.get(f'{self.url + usr + bn}')
+                brw.get(f'{self.url + usrs + bn}')
 
                 try:
-                    output = WebDriverWait(brw, 10).until(EC.presence_of_element_located((By.CLASS_NAME, 'f7vcsfb0')))
-                except Exception as error:
+                    output = WebDriverWait(brw, 10).until(ec.presence_of_element_located((By.CLASS_NAME, 'f7vcsfb0')))
+                except:
                     print(f'[{color_text("red", "-")}] class f7vcsfb0 did not return')
-                    print(color_text('red', f'ERROR: {error}'))
                 else:
                     if self.args.verb:
                         print(f'[{color_text("blue", "+")}] Collecting data from: div.f7vcsfb0')
@@ -140,24 +143,22 @@ class Fisher:
                         if c == 2:
                             members = output.find_elements(By.TAG_NAME, "a")
                             if members:
-                                get_data_members = str(input(f'[{color_text("yellow", "+")}] I can still get data from family members found in this profile. Do you wish to continue? [y/n]: ')).strip().lower()[0]
-                                if get_data_members == 'y':
+                                if self.args.scrpfm:
                                     for link in members:
                                         self.affluent.append(link.get_attribute('href'))
             if self.affluent:
                 for memb in self.affluent:
                     print()
                     print(f'[{color_text("white", "*")}] Coming in {self.url + memb}')
-                    temp_data.append('='*50)
-                    temp_data.append('='*50)
+                    temp_data.append('=' * 50)
                     for bn in branch:
                         brw.get(f'{memb + bn}')
 
                         try:
-                            output2 = WebDriverWait(brw, 10).until(EC.presence_of_element_located((By.CLASS_NAME, 'f7vcsfb0')))
-                        except Exception as error:
+                            output2 = WebDriverWait(brw, 10).until(ec.presence_of_element_located((By.CLASS_NAME,
+                                                                                                   'f7vcsfb0')))
+                        except:
                             print(f'[{color_text("red", "-")}] class f7vcsfb0 did not return')
-                            print(color_text('red', f'ERROR: {error}'))
                         else:
                             if self.args.verb:
                                 print(f'[{color_text("blue", "+")}] Collecting data from: div.f7vcsfb0')
@@ -179,9 +180,9 @@ class Fisher:
             browser = Firefox()
         self.login(browser)
         if self.args.usersnames is None:
-            self.scrap(browser, self.upload_txt_file())
+            self.scrape(browser, self.upload_txt_file())
         else:
-            self.scrap(browser, self.args.usersnames)
+            self.scrape(browser, self.args.usersnames)
 
         browser.quit()
 
@@ -199,7 +200,7 @@ if __name__ == '__main__':
                     for data in data_list:
                         file.write(data)
                         file.write('\n')
-                        file.write('-'*50)
+                        file.write('-' * 50)
                         file.write('\n\n')
         print(f'[{color_text("green", "+")}] SUCCESS')
     else:
@@ -209,4 +210,4 @@ if __name__ == '__main__':
             for data in data_list:
                 print(data)
                 print()
-                print('-'*50)
+                print('-' * 50)
