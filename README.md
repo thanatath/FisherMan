@@ -1,4 +1,4 @@
-# FisherMan [![GitHub license](https://img.shields.io/github/license/Godofcoffe/FisherMan)](https://github.com/Godofcoffe/FisherMan/blob/main/LICENSE) ![badge](https://img.shields.io/badge/version-2.2.0-blue)  ![badge](https://img.shields.io/badge/python-%3E%3D3.8-green)
+# FisherMan [![GitHub license](https://img.shields.io/github/license/Godofcoffe/FisherMan)](https://github.com/Godofcoffe/FisherMan/blob/main/LICENSE) ![badge](https://img.shields.io/badge/version-3.0.0-blue)  ![badge](https://img.shields.io/badge/python-%3E%3D3.8-green)
 
 Search for public profile information on Facebook
 
@@ -17,21 +17,20 @@ $ python3 -m pip install -r requirements.txt
 ## Usage
 ```
 $ python3 fisherman.py --help
-usage: fisherman.py [-h] [--version] [--username USERSNAMES [USERSNAMES ...]]
-                    [--scrape-family] [--browser] [--email EMAIL]
-                    [--password PASSWORD] [--use-txt TXT_FILE] [--file-output]
-                    [--verbose]
+usage: fisherman.py [-h] [--version] [-u USERSNAMES [USERSNAMES ...]]
+                    [--scrape-family] [-b] [--email EMAIL]
+                    [--password PASSWORD] [--use-txt TXT_FILE] [-o] [-v]
 
-FisherMan: Extract information from facebook profiles (Version 2.2.0)
+FisherMan: Extract information from facebook profiles (Version 3.0.0)
 
 optional arguments:
   -h, --help            show this help message and exit
   --version             Shows the current version of the program.
-  --username USERSNAMES [USERSNAMES ...], -u USERSNAMES [USERSNAMES ...]
+  -u USERSNAMES [USERSNAMES ...], --username USERSNAMES [USERSNAMES ...]
                         defines one or more users for the search.
   --scrape-family       If this parameter is passed, the information from
                         family members will be scraped if available.
-  --browser, -b         Opens the browser / bot.
+  -b, --browser         Opens the browser / bot.
   --email EMAIL         If the profile is blocked, you can define your
                         account, however you have the search user in your
                         friends list.
@@ -39,8 +38,8 @@ optional arguments:
                         parameter has to be used with --email.
   --use-txt TXT_FILE    Replaces the USERSNAMES parameter with a user list in
                         a txt.
-  --file-output, -o     Save the output data to a .txt file.
-  --verbose, -v, -d, --debug
+  -o, --file-output     Save the output data to a .txt file.
+  -v, -d, --verbose, --debug
                         It shows in detail the data search process.
 ```
 To search for a user
