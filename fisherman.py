@@ -248,7 +248,7 @@ if __name__ == '__main__':
     if fs.args.out:
         if fs.args.usersnames is None:
             for usr in upload_txt_file(txt_file):
-                with open(f'"{usr}-{str(datetime.datetime.now())[:16]}".txt', 'a+') as file:
+                with open(rf"{usr}-{str(datetime.datetime.now())[:16]}.txt", 'a+') as file:
                     for data_list in data:
                         for data in data_list:
                             file.write(data)
@@ -257,7 +257,7 @@ if __name__ == '__main__':
                             file.write('\n\n')
         else:
             for usr2 in fs.args.usersnames:
-                with open(f'"{usr2}-{str(datetime.datetime.now())[:16]}".txt', 'a+') as file:
+                with open(rf"{usr2}-{str(datetime.datetime.now())[:16]}.txt", 'a+') as file:
                     for data_list in manager.get_data():
                         for data in data_list:
                             file.write(data)

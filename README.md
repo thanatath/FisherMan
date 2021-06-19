@@ -13,6 +13,7 @@ $ cd FisherMan
 # install the requirements
 $ python3 -m pip install -r requirements.txt
 ```
+>>!make sure you have the executable "geckodriver" installed on your machine.
 
 ## Usage
 ```
@@ -44,7 +45,7 @@ optional arguments:
 ```
 To search for a user
 ```
-python3 fisherman.py --username user user.name user2.name2
+python3 fisherman.py -u user user.name user2.name2
 ```
 
 the username must be found on the facebook profile link, such as:
@@ -59,7 +60,7 @@ python3 fisherman.py --use-txt filename.txt
 
 And with that you can send the output to a txt also using: 
 ```
-python3 fisheman.py --username name --file-output
+python3 fisheman.py -u name -o
 ```
 
 Some profiles are limited to displaying your information for any account, so you can use your account to extract.
