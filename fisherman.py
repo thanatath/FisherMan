@@ -5,7 +5,8 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as ec
 from selenium.webdriver.common.by import By
 from argparse import ArgumentParser
-from os import path
+from os import path, walk
+from zipfile import ZipFile, ZIP_DEFLATED
 from requests import get
 from re import findall
 import datetime
@@ -24,12 +25,16 @@ class Fisher:
                             help='Shows the current version of the program.')
 
         parser.add_argument('-u', '--username', action='store', nargs='+', required=False, dest='usersnames',
-                            metavar='USERSNAMES', type=str,
-                            help='defines one or more users for the search.')
+                            type=str, help='defines one or more users for the search.')
 
         parser.add_argument('--scrape-family', action='store_true', required=False, dest='scrpfm',
                             help='If this parameter is passed, '
                                  'the information from family members will be scraped if available.')
+
+        parser.add_argument("-s", "--specify", action="store", nargs="+", required=False, dest="index",
+                            metavar="0:5", type=int,
+                            help="Use the index number to return a specific part of the page, "
+                                 "for example if you only want data 'about' the page, use index 0.")
 
         parser.add_argument('-b', '--browser', action='store_true', dest='browser', required=False,
                             help='Opens the browser / bot.')
@@ -48,6 +53,9 @@ class Fisher:
 
         parser.add_argument('-o', '--file-output', action='store_true', required=False, dest='out',
                             help='Save the output data to a .txt file.')
+
+        parser.add_argument("-c", "--compact", action="store_true", required=False, dest="comp",
+                            help="Compress all .txt files.")
 
         parser.add_argument('-v', '-d', '--verbose', '--debug', action='store_true', required=False, dest='verb',
                             help='It shows in detail the data search process.')
@@ -136,6 +144,16 @@ def upload_txt_file(name_file: str):
         color_text("red", "INVALID FILE!")
 
 
+def compact():
+    with ZipFile(f"{datetime.datetime.now()[:16]}", "w", ZIP_DEFLATED) as zip_output:
+        for root, dirs, files in walk("."):
+            for archive in files:
+                name_file, extension = path.splitext(archive)
+                if extension == ".txt" and name_file != "requeriments":
+                    zip_output.write(archive)
+    print(f'[{color_text("green", "+")}] successful compression')
+
+
 manager = Manager()
 
 
@@ -145,9 +163,17 @@ def scrape(parse, brw, items: list):
     for usrs in items:
         temp_data = []
         print(f'[{color_text("white", "*")}] Coming in {manager.get_url() + usrs}')
-        for c, bn in enumerate(branch):
-            brw.get(f'{manager.get_url() + usrs + bn}')
 
+        if parse.index:
+            temp_branch = []
+            for i in parse.index:
+                temp_branch.append(branch[i])
+                if parse.verb:
+                    print(f'[{color_text("green", "+")}] branch {i} added to url')
+            branch = temp_branch
+
+        for bn in branch:
+            brw.get(f'{manager.get_url() + usrs + bn}')
             try:
                 output = WebDriverWait(brw, 10).until(ec.presence_of_element_located((By.CLASS_NAME, 'f7vcsfb0')))
             except:
@@ -158,7 +184,7 @@ def scrape(parse, brw, items: list):
                 else:
                     print(f'[{color_text("blue", "+")}] collecting data ...')
                 temp_data.append(output.text)
-                if c == 2:
+                if bn == '/about_family_and_relationships':
                     members = output.find_elements(By.TAG_NAME, "a")
                     if members and parse.scrpfm:
                         for link in members:
@@ -171,7 +197,6 @@ def scrape(parse, brw, items: list):
                 temp_data.append('=' * 50)
                 for bn in branch:
                     brw.get(f'{memb + bn}')
-
                     try:
                         output2 = WebDriverWait(brw, 10).until(ec.presence_of_element_located((By.CLASS_NAME,
                                                                                                'f7vcsfb0')))
@@ -264,7 +289,12 @@ if __name__ == '__main__':
                             file.write('\n')
                             file.write('-' * 50)
                             file.write('\n\n')
-        print(f'[{color_text("green", "+")}] SUCCESS')
+        print(f'[{color_text("green", "+")}] .txt files created')
+        if fs.args.comp:
+            if fs.args.verb:
+                print(f'[{color_text("white", "*")}] preparing compaction...')
+            compact()
+
     else:
         print(color_text('green', 'Information found:'))
         print('-' * 60)

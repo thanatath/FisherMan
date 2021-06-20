@@ -13,14 +13,14 @@ $ cd FisherMan
 # install the requirements
 $ python3 -m pip install -r requirements.txt
 ```
->>!make sure you have the executable "geckodriver" installed on your machine.
+>make sure you have the executable "geckodriver" installed on your machine.
 
 ## Usage
 ```
 $ python3 fisherman.py --help
 usage: fisherman.py [-h] [--version] [-u USERSNAMES [USERSNAMES ...]]
-                    [--scrape-family] [-b] [--email EMAIL]
-                    [--password PASSWORD] [--use-txt TXT_FILE] [-o] [-v]
+                    [--scrape-family] [-s 0:5 [0:5 ...]] [-b] [--email EMAIL]
+                    [--password PASSWORD] [--use-txt TXT_FILE] [-o] [-c] [-v]
 
 FisherMan: Extract information from facebook profiles (Version 3.0.0)
 
@@ -31,6 +31,10 @@ optional arguments:
                         defines one or more users for the search.
   --scrape-family       If this parameter is passed, the information from
                         family members will be scraped if available.
+  -s 0:5 [0:5 ...], --specify 0:5 [0:5 ...]
+                        Use the index number to return a specific part of the
+                        page, for example if you only want data 'about' the
+                        page, use index 0.
   -b, --browser         Opens the browser / bot.
   --email EMAIL         If the profile is blocked, you can define your
                         account, however you have the search user in your
@@ -40,8 +44,10 @@ optional arguments:
   --use-txt TXT_FILE    Replaces the USERSNAMES parameter with a user list in
                         a txt.
   -o, --file-output     Save the output data to a .txt file.
+  -c, --compact         Compress all .txt files.
   -v, -d, --verbose, --debug
                         It shows in detail the data search process.
+
 ```
 To search for a user
 ```
@@ -56,11 +62,6 @@ https://facebook.com/name.profile/
 It is also possible to load multiple usernames from a .txt file, it can be useful for a kind of brute force:
 ```
 python3 fisherman.py --use-txt filename.txt
-```
-
-And with that you can send the output to a txt also using: 
-```
-python3 fisheman.py -u name -o
 ```
 
 Some profiles are limited to displaying your information for any account, so you can use your account to extract.
