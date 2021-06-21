@@ -25,9 +25,9 @@ class Fisher:
                             help='Shows the current version of the program.')
 
         parser.add_argument('-u', '--username', action='store', nargs='+', required=False, dest='usersnames',
-                            type=str, help='defines one or more users for the search.')
+                            type=str, help='Defines one or more users for the search.\n')
 
-        parser.add_argument('--scrape-family', action='store_true', required=False, dest='scrpfm',
+        parser.add_argument('-sf', '--scrape-family', action='store_true', required=False, dest='scrpfm',
                             help='If this parameter is passed, '
                                  'the information from family members will be scraped if available.')
 
@@ -55,7 +55,7 @@ class Fisher:
                             help='Save the output data to a .txt file.')
 
         parser.add_argument("-c", "--compact", action="store_true", required=False, dest="comp",
-                            help="Compress all .txt files.")
+                            help="Compress all .txt files. Recommended to use together with -o.")
 
         parser.add_argument('-v', '-d', '--verbose', '--debug', action='store_true', required=False, dest='verb',
                             help='It shows in detail the data search process.')

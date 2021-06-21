@@ -13,13 +13,13 @@ $ cd FisherMan
 # install the requirements
 $ python3 -m pip install -r requirements.txt
 ```
->make sure you have the executable "geckodriver" installed on your machine.
+**Make sure you have the executable "geckodriver" installed on your machine.**
 
 ## Usage
 ```
 $ python3 fisherman.py --help
-usage: fisherman.py [-h] [--version] [-u USERSNAMES [USERSNAMES ...]]
-                    [--scrape-family] [-s 0:5 [0:5 ...]] [-b] [--email EMAIL]
+usage: fisherman.py [-h] [--version] [-u USERSNAMES [USERSNAMES ...]] [-sf]
+                    [-s 0:5 [0:5 ...]] [-b] [--email EMAIL]
                     [--password PASSWORD] [--use-txt TXT_FILE] [-o] [-c] [-v]
 
 FisherMan: Extract information from facebook profiles (Version 3.0.0)
@@ -28,8 +28,8 @@ optional arguments:
   -h, --help            show this help message and exit
   --version             Shows the current version of the program.
   -u USERSNAMES [USERSNAMES ...], --username USERSNAMES [USERSNAMES ...]
-                        defines one or more users for the search.
-  --scrape-family       If this parameter is passed, the information from
+                        Defines one or more users for the search.
+  -sf, --scrape-family  If this parameter is passed, the information from
                         family members will be scraped if available.
   -s 0:5 [0:5 ...], --specify 0:5 [0:5 ...]
                         Use the index number to return a specific part of the
@@ -44,10 +44,10 @@ optional arguments:
   --use-txt TXT_FILE    Replaces the USERSNAMES parameter with a user list in
                         a txt.
   -o, --file-output     Save the output data to a .txt file.
-  -c, --compact         Compress all .txt files.
+  -c, --compact         Compress all .txt files. Recommended to use together
+                        with -o.
   -v, -d, --verbose, --debug
                         It shows in detail the data search process.
-
 ```
 To search for a user
 ```
