@@ -4,7 +4,7 @@ from selenium.webdriver import Firefox, FirefoxOptions
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as ec
 from selenium.webdriver.common.by import By
-from argparse import ArgumentParser
+from argparse import ArgumentParser, RawDescriptionHelpFormatter
 from os import path, walk
 from zipfile import ZipFile, ZIP_DEFLATED
 from requests import get
@@ -14,30 +14,35 @@ from form_text import *
 from logo import *
 
 module_name = 'FisherMan: Extract information from facebook profiles'
-__version__ = "3.0.0"
+__version__ = "3.0.1"
 
 
 class Fisher:
     def __init__(self):
-        parser = ArgumentParser(description=f'{module_name} (Version {__version__})')
+        parser = ArgumentParser(description=f'{module_name} (Version {__version__})',
+                                formatter_class=RawDescriptionHelpFormatter)
 
         parser.add_argument('--version', action='version', version=f'%(prog)s {__version__}',
                             help='Shows the current version of the program.')
 
         parser.add_argument('-u', '--username', action='store', nargs='+', required=False, dest='usersnames',
-                            type=str, help='Defines one or more users for the search.\n')
+                            type=str, help='Defines one or more users for the search.')
 
         parser.add_argument('-sf', '--scrape-family', action='store_true', required=False, dest='scrpfm',
                             help='If this parameter is passed, '
                                  'the information from family members will be scraped if available.')
 
-        parser.add_argument("-s", "--specify", action="store", nargs="+", required=False, dest="index",
-                            metavar="0:5", type=int,
-                            help="Use the index number to return a specific part of the page, "
-                                 "for example if you only want data 'about' the page, use index 0.")
+        parser.add_argument("--specify", action="store", nargs="+", required=False, dest="index",
+                            type=int, choices=[0, 1, 2, 3, 4, 5],
+                            help="Use the index number to return a specific part of the page. "
+                                 "Your references are... about: 0, about_contact_and_basic_info: 1, "
+                                 "about_family_and_relationships: 2, "
+                                 "about_details: 3, "
+                                 "about_work_and_education: 4, "
+                                 "about_places: 5.")
 
         parser.add_argument('-b', '--browser', action='store_true', dest='browser', required=False,
-                            help='Opens the browser / bot.')
+                            help='Opens the browser/bot.')
 
         parser.add_argument('--email', action='store', metavar='EMAIL', dest='email',
                             required=False, type=str,
@@ -60,7 +65,7 @@ class Fisher:
         parser.add_argument('-v', '-d', '--verbose', '--debug', action='store_true', required=False, dest='verb',
                             help='It shows in detail the data search process.')
 
-        print(color_text('white', name))
+        print(color_text('blue', name))
         self.args = parser.parse_args()
 
 

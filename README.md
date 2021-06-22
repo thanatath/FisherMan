@@ -19,10 +19,11 @@ $ python3 -m pip install -r requirements.txt
 ```
 $ python3 fisherman.py --help
 usage: fisherman.py [-h] [--version] [-u USERSNAMES [USERSNAMES ...]] [-sf]
-                    [-s 0:5 [0:5 ...]] [-b] [--email EMAIL]
-                    [--password PASSWORD] [--use-txt TXT_FILE] [-o] [-c] [-v]
+                    [--specify {0,1,2,3,4,5} [{0,1,2,3,4,5} ...]] [-b]
+                    [--email EMAIL] [--password PASSWORD] [--use-txt TXT_FILE]
+                    [-o] [-c] [-v]
 
-FisherMan: Extract information from facebook profiles (Version 3.0.0)
+FisherMan: Extract information from facebook profiles (Version 3.0.1)
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -31,11 +32,13 @@ optional arguments:
                         Defines one or more users for the search.
   -sf, --scrape-family  If this parameter is passed, the information from
                         family members will be scraped if available.
-  -s 0:5 [0:5 ...], --specify 0:5 [0:5 ...]
+  --specify {0,1,2,3,4,5} [{0,1,2,3,4,5} ...]
                         Use the index number to return a specific part of the
-                        page, for example if you only want data 'about' the
-                        page, use index 0.
-  -b, --browser         Opens the browser / bot.
+                        page. Your references are... about: 0,
+                        about_contact_and_basic_info: 1,
+                        about_family_and_relationships: 2, about_details: 3,
+                        about_work_and_education: 4, about_places: 5.
+  -b, --browser         Opens the browser/bot.
   --email EMAIL         If the profile is blocked, you can define your
                         account, however you have the search user in your
                         friends list.
@@ -54,7 +57,7 @@ To search for a user
 python3 fisherman.py -u user user.name user2.name2
 ```
 
-the username must be found on the facebook profile link, such as:
+The username must be found on the facebook profile link, such as:
 ```
 https://facebook.com/name.profile/
 ```
@@ -65,7 +68,7 @@ python3 fisherman.py --use-txt filename.txt
 ```
 
 Some profiles are limited to displaying your information for any account, so you can use your account to extract.
-Note: this should be used as the last hypothesis and the target profile must be on your friends list:
+Note: this should be used as the last hypothesis, and the target profile must be on your friends list:
 ```
 python3 fisherman.py --email youremail@email.com --password yourpass
 ```
