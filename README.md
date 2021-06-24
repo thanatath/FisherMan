@@ -1,6 +1,6 @@
 # FisherMan [![GitHub license](https://img.shields.io/github/license/Godofcoffe/FisherMan)](https://github.com/Godofcoffe/FisherMan/blob/main/LICENSE) ![badge](https://img.shields.io/badge/version-3.0.0-blue)  ![badge](https://img.shields.io/badge/python-%3E%3D3.8-green)
 
-Search for public profile information on Facebook
+> Search for public profile information on Facebook
 
 ## Installation
 ```
@@ -13,7 +13,8 @@ $ cd FisherMan
 # install the requirements
 $ python3 -m pip install -r requirements.txt
 ```
-**Make sure you have the executable "geckodriver" installed on your machine.**
+## Pre-requisites
+* Make sure you have the executable "geckodriver" installed on your machine.
 
 ## Usage
 ```
