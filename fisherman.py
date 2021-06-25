@@ -5,7 +5,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as ec
 from selenium.webdriver.common.by import By
 from argparse import ArgumentParser, RawDescriptionHelpFormatter
-from os import path, walk
+from os import path, walk, remove, getcwd
 from zipfile import ZipFile, ZIP_DEFLATED
 from requests import get
 from re import findall
@@ -14,7 +14,7 @@ from form_text import *
 from logo import *
 
 module_name = 'FisherMan: Extract information from facebook profiles'
-__version__ = "3.0.1"
+__version__ = "3.0.2"
 
 
 class Fisher:
@@ -60,7 +60,7 @@ class Fisher:
                             help='Save the output data to a .txt file.')
 
         parser.add_argument("-c", "--compact", action="store_true", required=False, dest="comp",
-                            help="Compress all .txt files. Recommended to use together with -o.")
+                            help="Compress all .txt files. Use together with -o.")
 
         parser.add_argument('-v', '-d', '--verbose', '--debug', action='store_true', required=False, dest='verb',
                             help='It shows in detail the data search process.')
@@ -150,12 +150,13 @@ def upload_txt_file(name_file: str):
 
 
 def compact():
-    with ZipFile(f"{datetime.datetime.now()[:16]}", "w", ZIP_DEFLATED) as zip_output:
-        for root, dirs, files in walk("."):
+    with ZipFile(f"{str(datetime.datetime.now())[:16]}", "w", ZIP_DEFLATED) as zip_output:
+        for root, dirs, files in walk(getcwd()):
             for archive in files:
                 name_file, extension = path.splitext(archive)
                 if extension == ".txt" and name_file != "requeriments":
                     zip_output.write(archive)
+                    remove(archive)
     print(f'[{color_text("green", "+")}] successful compression')
 
 
@@ -294,7 +295,7 @@ if __name__ == '__main__':
                             file.write('\n')
                             file.write('-' * 50)
                             file.write('\n\n')
-        print(f'[{color_text("green", "+")}] .txt files created')
+        print(f'[{color_text("green", "+")}] .txt file(s) created')
         if fs.args.comp:
             if fs.args.verb:
                 print(f'[{color_text("white", "*")}] preparing compaction...')
