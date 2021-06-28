@@ -4,23 +4,22 @@ from selenium.webdriver import Firefox, FirefoxOptions
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as ec
 from selenium.webdriver.common.by import By
-from argparse import ArgumentParser, RawDescriptionHelpFormatter
+from argparse import ArgumentParser
 from os import path, walk, remove, getcwd
 from zipfile import ZipFile, ZIP_DEFLATED
 from requests import get
 from re import findall
 import datetime
-from form_text import *
-from logo import *
+from src.form_text import *
+from src.logo import *
 
 module_name = 'FisherMan: Extract information from facebook profiles'
-__version__ = "3.0.2"
+__version__ = "3.0.3"
 
 
 class Fisher:
     def __init__(self):
-        parser = ArgumentParser(description=f'{module_name} (Version {__version__})',
-                                formatter_class=RawDescriptionHelpFormatter)
+        parser = ArgumentParser(description=f'{module_name} (Version {__version__})')
 
         parser.add_argument('--version', action='version', version=f'%(prog)s {__version__}',
                             help='Shows the current version of the program.')
@@ -35,7 +34,7 @@ class Fisher:
         parser.add_argument("--specify", action="store", nargs="+", required=False, dest="index",
                             type=int, choices=[0, 1, 2, 3, 4, 5],
                             help="Use the index number to return a specific part of the page. "
-                                 "Your references are... about: 0, about_contact_and_basic_info: 1, "
+                                 "about: 0, about_contact_and_basic_info: 1, "
                                  "about_family_and_relationships: 2, "
                                  "about_details: 3, "
                                  "about_work_and_education: 4, "
