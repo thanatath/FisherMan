@@ -3,12 +3,12 @@
 ![badge](https://img.shields.io/badge/version-3.0.3-blue)
 ![badge](https://img.shields.io/badge/python-%3E%3D3.8-orange)
 
-> Search for public profile information on Facebook
+### Search for public profile information on Facebook
 
 ![screenshot](template.png)
 
 ## Installation
-```shell
+```
 # clone the repo
 $ git clone https://github.com/Godofcoffe/FisherMan.git
 
