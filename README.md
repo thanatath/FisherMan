@@ -79,10 +79,10 @@ python3 fisherman.py --email youremail@email.com --password yourpass
 
 ### Some situations:
 * For complete massive scrape:
-```
-python3 fisherman.py --use-txt file -o -c -sf
-```
-With a file with dozens of names on each line, you can make a complete "scan" taking your information and even your family members and will be compressed into a .zip at the output
+  ```
+  python3 fisherman.py --use-txt file -o -c -sf
+  ```
+  With a file with dozens of names on each line, you can make a complete "scan" taking your information and even your family members and will be compressed into a .zip at the output.
 
 * For specific parts of the account:
   *  Basic data: `python3 fisherman.py -u name --specify 0`
