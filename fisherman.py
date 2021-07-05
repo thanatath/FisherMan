@@ -1,6 +1,6 @@
 #! /usr/bin/env python3
 
-from selenium.webdriver import Firefox, FirefoxOptions
+from selenium.webdriver import Firefox, FirefoxOptions, FirefoxProfile
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as ec
 from selenium.webdriver.common.by import By
@@ -14,7 +14,7 @@ from src.form_text import *
 from src.logo import *
 
 module_name = 'FisherMan: Extract information from facebook profiles'
-__version__ = "3.0.3"
+__version__ = "3.0.4"
 
 
 class Fisher:
@@ -251,16 +251,19 @@ def login(parse, brw):
 
 
 def main(args):
+    profile = FirefoxProfile()
+    profile.set_preference("dom.popup_maximum", 0)
+    profile.set_preference("privacy.popups.showBrowserMessage", False)
     if not args.browser:
         if args.verb:
             print(f'[{color_text("blue", "*")}] Starting in hidden mode')
         options = FirefoxOptions()
         options.add_argument("--headless")
-        browser = Firefox(options=options)
+        browser = Firefox(options=options, firefox_profile=profile)
     else:
         if args.verb:
             print(f'[{color_text("white", "*")}] Opening browser ...')
-        browser = Firefox()
+        browser = Firefox(firefox_profile=profile)
     login(args, browser)
     if args.usersnames is None:
         scrape(args, browser, upload_txt_file(args.txt))
