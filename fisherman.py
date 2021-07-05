@@ -197,11 +197,14 @@ def scrape(parse, brw, items: list):
                         for link in members:
                             manager.add_affluent(link.get_attribute('href'))
 
+        # só será executado esse escopo se a lista de "affluents" não estiver vazia.
         if manager.get_affluent():
+            div = "\n\n\n" + '=' * 60 + "\n\n\n"
+            bar = "\n" + "*" * 60 + "\n"
             for memb in manager.get_affluent():
                 print()
-                print(f'[{color_text("white", "*")}] Coming in {manager.get_url() + memb}')
-                temp_data.append('=' * 50)
+                print(f'[{color_text("white", "*")}] Coming in {memb}')
+                temp_data.append(div)
                 for bn in branch:
                     brw.get(f'{memb + bn}')
                     try:
@@ -214,7 +217,8 @@ def scrape(parse, brw, items: list):
                             print(f'[{color_text("blue", "+")}] Collecting data from: div.f7vcsfb0')
                         else:
                             print(f'[{color_text("blue", "+")}] collecting data ...')
-                        temp_data.append(output2.text)
+                        temp_data.append(output2.text + bar)
+            temp_data.append(div)
         manager.add_data(temp_data)
 
 
@@ -266,7 +270,7 @@ def main(args):
             configs["options"] = options
         if args.verb:
             print(f'[{color_text("white", "*")}] Opening browser ...')
-        browser = Firefox(configs)
+        browser = Firefox(**configs)
     except Exception as error:
         print(color_text("red",
                          f'The executable "geckodriver" was not found or the browser "Firefox" is not installed.'))
@@ -290,21 +294,15 @@ if __name__ == '__main__':
         if fs.args.usersnames is None:
             for usr in upload_txt_file(txt_file):
                 with open(rf"{usr}-{str(datetime.datetime.now())[:16]}.txt", 'a+') as file:
-                    for data_list in data:
-                        for data in data_list:
-                            file.write(data)
-                            file.write('\n')
-                            file.write('-' * 50)
-                            file.write('\n\n')
+                    for data_list in manager.get_data():
+                        file.writelines(data_list)
+
         else:
             for usr2 in fs.args.usersnames:
                 with open(rf"{usr2}-{str(datetime.datetime.now())[:16]}.txt", 'a+') as file:
                     for data_list in manager.get_data():
-                        for data in data_list:
-                            file.write(data)
-                            file.write('\n')
-                            file.write('-' * 50)
-                            file.write('\n\n')
+                        file.writelines(data_list)
+
         print(f'[{color_text("green", "+")}] .txt file(s) created')
         if fs.args.comp:
             if fs.args.verb:
