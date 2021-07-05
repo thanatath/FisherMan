@@ -1,15 +1,17 @@
 #! /usr/bin/env python3
 
-from selenium.webdriver import Firefox, FirefoxOptions, FirefoxProfile
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as ec
-from selenium.webdriver.common.by import By
+import datetime
 from argparse import ArgumentParser
 from os import path, walk, remove, getcwd
-from zipfile import ZipFile, ZIP_DEFLATED
-from requests import get
 from re import findall
-import datetime
+from zipfile import ZipFile, ZIP_DEFLATED
+
+from requests import get
+from selenium.webdriver import Firefox, FirefoxOptions, FirefoxProfile
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support import expected_conditions as ec
+from selenium.webdriver.support.ui import WebDriverWait
+
 from src.form_text import *
 from src.logo import *
 
@@ -252,24 +254,30 @@ def login(parse, brw):
 
 def main(args):
     profile = FirefoxProfile()
+    options = FirefoxOptions()
     profile.set_preference("dom.popup_maximum", 0)
     profile.set_preference("privacy.popups.showBrowserMessage", False)
-    if not args.browser:
-        if args.verb:
-            print(f'[{color_text("blue", "*")}] Starting in hidden mode')
-        options = FirefoxOptions()
-        options.add_argument("--headless")
-        browser = Firefox(options=options, firefox_profile=profile)
-    else:
+    options.add_argument("--headless")
+    configs = {"firefox_profile": profile}
+    try:
+        if not args.browser:
+            if args.verb:
+                print(f'[{color_text("blue", "*")}] Starting in hidden mode')
+            configs["options"] = options
         if args.verb:
             print(f'[{color_text("white", "*")}] Opening browser ...')
-        browser = Firefox(firefox_profile=profile)
-    login(args, browser)
-    if args.usersnames is None:
-        scrape(args, browser, upload_txt_file(args.txt))
+        browser = Firefox(configs)
+    except Exception as error:
+        print(color_text("red",
+                         f'The executable "geckodriver" was not found or the browser "Firefox" is not installed.'))
+        print(color_text("yellow", f"error details:\n{error}"))
     else:
-        scrape(args, browser, args.usersnames)
-    browser.quit()
+        login(args, browser)
+        if args.usersnames is None:
+            scrape(args, browser, upload_txt_file(args.txt))
+        else:
+            scrape(args, browser, args.usersnames)
+        browser.quit()
 
 
 if __name__ == '__main__':
