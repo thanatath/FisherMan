@@ -1,6 +1,6 @@
 # FisherMan
 [![GitHub license](https://img.shields.io/github/license/Godofcoffe/FisherMan)](https://github.com/Godofcoffe/FisherMan/blob/main/LICENSE)
-![badge](https://img.shields.io/badge/version-3.0.3-blue)
+![badge](https://img.shields.io/badge/version-3.0.4-blue)
 ![badge](https://img.shields.io/badge/python-%3E%3D3.8-orange)
 
 ### Search for public profile information on Facebook
@@ -29,7 +29,7 @@ usage: fisherman.py [-h] [--version] [-u USERSNAMES [USERSNAMES ...]] [-sf]
                     [--email EMAIL] [--password PASSWORD] [--use-txt TXT_FILE]
                     [-o] [-c] [-v]
 
-FisherMan: Extract information from facebook profiles (Version 3.0.3)
+FisherMan: Extract information from facebook profiles (Version 3.0.4)
 
 optional arguments:
   -h, --help            show this help message and exit

@@ -183,8 +183,9 @@ def scrape(parse, brw, items: list):
             brw.get(f'{manager.get_url() + usrs + bn}')
             try:
                 output = WebDriverWait(brw, 10).until(ec.presence_of_element_located((By.CLASS_NAME, 'f7vcsfb0')))
-            except:
+            except Exception as error:
                 print(f'[{color_text("red", "-")}] class f7vcsfb0 did not return')
+                print(color_text("yellow", f"error details:\n{error}"))
             else:
                 if parse.verb:
                     print(f'[{color_text("blue", "+")}] Collecting data from: div.f7vcsfb0')
@@ -199,8 +200,8 @@ def scrape(parse, brw, items: list):
 
         # só será executado esse escopo se a lista de "affluents" não estiver vazia.
         if manager.get_affluent():
-            div = "\n\n\n" + '=' * 60 + "\n\n\n"
-            bar = "\n" + "*" * 60 + "\n"
+            div = "\n\n\n" + '=' * 70 + "\n\n\n"
+            bar = "\n" + "*" * 70 + "\n"
             for memb in manager.get_affluent():
                 print()
                 print(f'[{color_text("white", "*")}] Coming in {memb}')
@@ -210,8 +211,9 @@ def scrape(parse, brw, items: list):
                     try:
                         output2 = WebDriverWait(brw, 10).until(ec.presence_of_element_located((By.CLASS_NAME,
                                                                                                'f7vcsfb0')))
-                    except:
+                    except Exception as error:
                         print(f'[{color_text("red", "-")}] class f7vcsfb0 did not return')
+                        print(color_text("yellow", f"error details:\n{error}"))
                     else:
                         if parse.verb:
                             print(f'[{color_text("blue", "+")}] Collecting data from: div.f7vcsfb0')
