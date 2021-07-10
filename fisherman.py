@@ -2,6 +2,7 @@
 
 import datetime
 from argparse import ArgumentParser
+from base64 import b64decode
 from os import path, walk, remove, getcwd
 from re import findall
 from zipfile import ZipFile, ZIP_DEFLATED
@@ -12,11 +13,11 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as ec
 from selenium.webdriver.support.ui import WebDriverWait
 
-from src.form_text import *
-from src.logo import *
+from src.form_text import color_text
+from src.logo import name
 
 module_name = 'FisherMan: Extract information from facebook profiles'
-__version__ = "3.0.4"
+__version__ = "3.0.5"
 
 
 class Fisher:
@@ -74,7 +75,7 @@ class Manager:
     def __init__(self):
         self.__url__ = 'https://facebook.com/'
         self.__fake_email__ = 'submarino.sub.aquatico@outlook.com'
-        self.__password__ = '0cleptomaniaco0'
+        self.__password__ = 'MDBjbGVwdG9tYW5pYWNvMDA='
         self.__data__ = []
         self.__affluent__ = []
 
@@ -198,7 +199,7 @@ def scrape(parse, brw, items: list):
                         for link in members:
                             manager.add_affluent(link.get_attribute('href'))
 
-        # só será executado esse escopo se a lista de "affluents" não estiver vazia.
+        # this scope will only be executed if the list of "affluents" is not empty.
         if manager.get_affluent():
             div = "\n\n\n" + '=' * 70 + "\n\n\n"
             bar = "\n" + "*" * 70 + "\n"
@@ -238,11 +239,11 @@ def login(parse, brw):
             print(f'[{color_text("white", "*")}] adding fake email: {manager.get_email()}')
             email.send_keys(manager.get_email())
             print(f'[{color_text("white", "*")}] adding password: ...')
-            pwd.send_keys(manager.get_pass())
+            pwd.send_keys(b64decode(manager.get_pass()).decode("utf-8"))
         else:
             print(f'[{color_text("white", "*")}] logging into the account: {manager.get_email()}')
             email.send_keys(manager.get_email())
-            pwd.send_keys(manager.get_pass())
+            pwd.send_keys(b64decode(manager.get_pass()).decode("utf-8"))
     else:
         if parse.verb:
             print(f'adding email: {parse.email}')
@@ -265,13 +266,13 @@ def main(args):
     profile.set_preference("privacy.popups.showBrowserMessage", False)
     options.add_argument("--headless")
     configs = {"firefox_profile": profile}
-    try:
-        if not args.browser:
-            if args.verb:
-                print(f'[{color_text("blue", "*")}] Starting in hidden mode')
-            configs["options"] = options
+    if not args.browser:
         if args.verb:
-            print(f'[{color_text("white", "*")}] Opening browser ...')
+            print(f'[{color_text("blue", "*")}] Starting in hidden mode')
+        configs["options"] = options
+    if args.verb:
+        print(f'[{color_text("white", "*")}] Opening browser ...')
+    try:
         browser = Firefox(**configs)
     except Exception as error:
         print(color_text("red",
