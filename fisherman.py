@@ -81,16 +81,21 @@ class Manager:
         self.__password__ = 'MDBjbGVwdG9tYW5pYWNvMDA='
         self.__data__ = []
         self.__affluent__ = []
+        self.__extras__ = []
 
     def clean_all(self):
         self.__data__.clear()
         self.__affluent__.clear()
+        self.__extras__.clear()
 
     def clean_data(self):
         self.__data__.clear()
 
     def clean_affluent(self):
         self.__affluent__.clear()
+
+    def clean_extras(self):
+        self.__extras__.clear()
 
     def set_email(self, string: str):
         self.__fake_email__ = string
@@ -104,11 +109,17 @@ class Manager:
     def set_affluent(self, item_list: list):
         self.__affluent__ = item_list
 
+    def set_extras(self, item_list: list):
+        self.__extras__ = item_list
+
     def add_data(self, string):
         self.__data__.append(string)
 
     def add_affluent(self, string):
         self.__affluent__.append(string)
+
+    def add_extras(self, string):
+        self.__extras__.append(string)
 
     def get_url(self):
         return self.__url__
@@ -124,6 +135,9 @@ class Manager:
 
     def get_affluent(self):
         return self.__affluent__
+
+    def get_extras(self):
+        return self.__extras__
 
 
 def update():
@@ -188,18 +202,21 @@ def exec_script(brw: Firefox, script: str):
     return brw.execute_script(script)
 
 
+manager = Manager()
+
+
 def extra_data(args, brw: Firefox, user: str):
     img = exec_script(brw, "return document.getElementsByTagName('image')[0].getAttribute('xlink:href');")
     followes = exec_script(brw, "return document.getElementsByTagNae('a')[20].innerText;")
     system(f"wget '{img}'")
     _file_name = rf"{usr}-{str(datetime.datetime.now())[:16]}.txt"
-    if args.comp:
-        _file_name = f"extraData-{user}.txt"
-    with open(_file_name, "w+") as extra:
-        extra.write(followes)
-
-
-manager = Manager()
+    if args.txt:
+        if args.comp:
+            _file_name = f"extraData-{user}.txt"
+        with open(_file_name, "w+") as extra:
+            extra.write(followes)
+    else:
+        manager.add_extras([followes])
 
 
 def scrape(parse, brw: Firefox, items: list):
@@ -411,3 +428,7 @@ if __name__ == '__main__':
                 print(data)
                 print()
                 print('-' * 50)
+        for data_extra in manager.get_extras():
+            print("\n\n\n" + '=' * 70 + "\n\n\n")
+            print("EXTRAS:")
+            print(data_extra)
