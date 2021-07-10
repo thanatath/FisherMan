@@ -1,6 +1,6 @@
 # FisherMan
 [![GitHub license](https://img.shields.io/github/license/Godofcoffe/FisherMan)](https://github.com/Godofcoffe/FisherMan/blob/main/LICENSE)
-![badge](https://img.shields.io/badge/version-3.0.5-blue)
+![badge](https://img.shields.io/badge/version-3.1.0-blue)
 ![badge](https://img.shields.io/badge/python-%3E%3D3.8-orange)
 
 ### Search for public profile information on Facebook
@@ -25,11 +25,11 @@ $ python3 -m pip install -r requirements.txt
 ```
 $ python3 fisherman.py --help
 usage: fisherman.py [-h] [--version] [-u USERSNAMES [USERSNAMES ...]] [-sf]
-                    [--specify {0,1,2,3,4,5} [{0,1,2,3,4,5} ...]] [-b]
+                    [--specify {0,1,2,3,4,5} [{0,1,2,3,4,5} ...]] [-s] [-b]
                     [--email EMAIL] [--password PASSWORD] [--use-txt TXT_FILE]
                     [-o] [-c] [-v]
 
-FisherMan: Extract information from facebook profiles (Version 3.0.5)
+FisherMan: Extract information from facebook profiles. (Version 3.1.0)
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -43,6 +43,8 @@ optional arguments:
                         page. about: 0, about_contact_and_basic_info: 1,
                         about_family_and_relationships: 2, about_details: 3,
                         about_work_and_education: 4, about_places: 5.
+  -s, --several         Returns extra data like profile picture and number of
+                        followers.
   -b, --browser         Opens the browser/bot.
   --email EMAIL         If the profile is blocked, you can define your
                         account, however you have the search user in your
@@ -58,7 +60,7 @@ optional arguments:
 ```
 To search for a user
 ```
-python3 fisherman.py -u user user.name user2.name2
+python3 fisherman.py -u name name.profile name.profile2
 ```
 
 The username must be found on the facebook profile link, such as:
