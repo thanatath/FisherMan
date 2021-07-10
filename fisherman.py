@@ -381,13 +381,19 @@ if __name__ == '__main__':
     if fs.args.out:  # .txt output creation
         if fs.args.usersnames is None:
             for usr in upload_txt_file(txt_file):
-                with open(rf"{usr}-{str(datetime.datetime.now())[:16]}.txt", 'a+') as file:
+                file_name = rf"{usr}-{str(datetime.datetime.now())[:16]}.txt"
+                if fs.args.comp:
+                    file_name = usr + ".txt"
+                with open(file_name, 'a+') as file:
                     for data_list in manager.get_data():
                         file.writelines(data_list)
 
         else:
             for usr2 in fs.args.usersnames:
-                with open(rf"{usr2}-{str(datetime.datetime.now())[:16]}.txt", 'a+') as file:
+                file_name = rf"{usr2}-{str(datetime.datetime.now())[:16]}.txt"
+                if fs.args.comp:
+                    file_name = usr2 + ".txt"
+                with open(file_name, 'a+') as file:
                     for data_list in manager.get_data():
                         file.writelines(data_list)
 
