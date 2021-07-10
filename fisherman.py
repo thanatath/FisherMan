@@ -3,7 +3,7 @@
 import datetime
 from argparse import ArgumentParser
 from base64 import b64decode
-from os import path, walk, remove, getcwd
+from os import path, walk, remove, getcwd, system
 from re import findall
 from zipfile import ZipFile, ZIP_DEFLATED
 
@@ -42,6 +42,9 @@ class Fisher:
                                  "about_details: 3, "
                                  "about_work_and_education: 4, "
                                  "about_places: 5.")
+
+        parser.add_argument("-s", "--several", action="store_true", required=False, dest="several",
+                            help="Returns extra data like profile picture and number of followers.")
 
         parser.add_argument('-b', '--browser', action='store_true', dest='browser', required=False,
                             help='Opens the browser/bot.')
@@ -140,11 +143,11 @@ def update():
 
 def upload_txt_file(name_file: str):
     """
-        Load a file to replace the --username parameter.
+        Load a file to replace the username parameter.
 
         :param name_file: txt file name.
 
-        Returns a list with each line of the file.
+        :return: A list with each line of the file.
     """
     if path.isfile(name_file):
         try:
@@ -160,7 +163,7 @@ def upload_txt_file(name_file: str):
 
 def compact():
     """
-        compress all .txt with the exception of requirements.txt.
+        Compress all .txt with the exception of requirements.txt.
     """
     with ZipFile(f"{str(datetime.datetime.now())[:16]}", "w", ZIP_DEFLATED) as zip_output:
         for root, dirs, files in walk(getcwd()):
@@ -170,6 +173,30 @@ def compact():
                     zip_output.write(archive)
                     remove(archive)
     print(f'[{color_text("green", "+")}] successful compression')
+
+
+def exec_script(brw: Firefox, script: str):
+    """
+        Runs a javascript script in the browser.
+
+        :param brw: Instance of WebDriver.
+        :param script: Script to be run on console.
+        :return: A data script.
+
+        Example script parameter: "return document.getElementById("fish");"
+    """
+    return brw.execute_script(script)
+
+
+def extra_data(args, brw: Firefox, user: str):
+    img = exec_script(brw, "return document.getElementsByTagName('image')[0].getAttribute('xlink:href');")
+    followes = exec_script(brw, "return document.getElementsByTagNae('a')[20].innerText;")
+    system(f"wget '{img}'")
+    _file_name = rf"{usr}-{str(datetime.datetime.now())[:16]}.txt"
+    if args.comp:
+        _file_name = f"extraData-{user}.txt"
+    with open(_file_name, "w+") as extra:
+        extra.write(followes)
 
 
 manager = Manager()
@@ -201,6 +228,10 @@ def scrape(parse, brw: Firefox, items: list):
                     print(f'[{color_text("green", "+")}] branch {i} added to url')
             branch = temp_branch
 
+        # search for extra data
+        if parse.several:
+            extra_data(parse, brw, usrs)
+
         for bn in branch:
             brw.get(f'{manager.get_url() + usrs + bn}')
             try:
@@ -230,6 +261,11 @@ def scrape(parse, brw: Firefox, items: list):
                 print()
                 print(f'[{color_text("white", "*")}] Coming in {memb}')
                 temp_data.append(div)
+
+                # search for extra data
+                if parse.several:
+                    extra_data(parse, brw, memb)
+
                 for bn in branch:
                     brw.get(f'{memb + bn}')
                     try:
