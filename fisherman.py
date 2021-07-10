@@ -216,6 +216,8 @@ def extra_data(args, brw: Firefox, user: str):
         with open(_file_name, "w+") as extra:
             extra.write(followes)
     else:
+
+        # in the future to add more data variables, put in the list
         manager.add_extras([followes])
 
 
@@ -428,7 +430,9 @@ if __name__ == '__main__':
                 print(data)
                 print()
                 print('-' * 50)
+
+        print("\n\n\n" + '=' * 70 + "\n\n\n")
         for data_extra in manager.get_extras():
-            print("\n\n\n" + '=' * 70 + "\n\n\n")
             print("EXTRAS:")
             print(data_extra)
+            bar = "\n" + "*" * 70 + "\n"
