@@ -182,8 +182,8 @@ def compact():
     with ZipFile(f"{str(datetime.datetime.now())[:16]}", "w", ZIP_DEFLATED) as zip_output:
         for root, dirs, files in walk(getcwd()):
             for archive in files:
-                name_file, extension = path.splitext(archive)
-                if extension == ".txt" and name_file != "requeriments":
+                _file_name, extension = path.splitext(archive)
+                if (extension == ".txt" and _file_name != "requeriments") or extension == ".jpeg":
                     zip_output.write(archive)
                     remove(archive)
     print(f'[{color_text("green", "+")}] successful compression')
@@ -208,9 +208,9 @@ manager = Manager()
 def extra_data(args, brw: Firefox, user: str):
     img = exec_script(brw, "return document.getElementsByTagName('image')[0].getAttribute('xlink:href');")
     followes = exec_script(brw, "return document.getElementsByTagNae('a')[20].innerText;")
-    system(f"wget '{img}'")
-    _file_name = rf"{usr}-{str(datetime.datetime.now())[:16]}.txt"
+    system(rf"wget '{img}'")
     if args.txt:
+        _file_name = rf"{user}-{str(datetime.datetime.now())[:16]}.txt"
         if args.comp:
             _file_name = f"extraData-{user}.txt"
         with open(_file_name, "w+") as extra:
@@ -435,4 +435,4 @@ if __name__ == '__main__':
         for data_extra in manager.get_extras():
             print("EXTRAS:")
             print(data_extra)
-            bar = "\n" + "*" * 70 + "\n"
+            print("\n" + "*" * 70 + "\n")
