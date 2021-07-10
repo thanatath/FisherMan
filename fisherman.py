@@ -16,8 +16,8 @@ from selenium.webdriver.support.ui import WebDriverWait
 from src.form_text import color_text
 from src.logo import name
 
-module_name = 'FisherMan: Extract information from facebook profiles'
-__version__ = "3.0.5"
+module_name = 'FisherMan: Extract information from facebook profiles.'
+__version__ = "3.1.0"
 
 
 class Fisher:
@@ -139,6 +139,13 @@ def update():
 
 
 def upload_txt_file(name_file: str):
+    """
+        Load a file to replace the --username parameter.
+
+        :param name_file: txt file name.
+
+        Returns a list with each line of the file.
+    """
     if path.isfile(name_file):
         try:
             with open(name_file, 'r') as txt:
@@ -152,6 +159,9 @@ def upload_txt_file(name_file: str):
 
 
 def compact():
+    """
+        compress all .txt with the exception of requirements.txt.
+    """
     with ZipFile(f"{str(datetime.datetime.now())[:16]}", "w", ZIP_DEFLATED) as zip_output:
         for root, dirs, files in walk(getcwd()):
             for archive in files:
@@ -165,13 +175,24 @@ def compact():
 manager = Manager()
 
 
-def scrape(parse, brw, items: list):
+def scrape(parse, brw: Firefox, items: list):
+    """
+        Extract certain information from the html of an item in the list provided.
+
+        :param parse: ArgParse instance namespace arguments to change code flow.
+        :param brw: Instance of WebDriver.
+        :param items: List of users to apply to scrape.
+
+        All data is stored in a list for each iterable items.
+    """
+
     branch = ['/about', '/about_contact_and_basic_info', '/about_family_and_relationships', '/about_details',
               '/about_work_and_education', '/about_places']
     for usrs in items:
         temp_data = []
         print(f'[{color_text("white", "*")}] Coming in {manager.get_url() + usrs}')
 
+        # here modifies the branch list to iterate only the parameter items --specify
         if parse.index:
             temp_branch = []
             for i in parse.index:
@@ -193,6 +214,8 @@ def scrape(parse, brw, items: list):
                 else:
                     print(f'[{color_text("blue", "+")}] collecting data ...')
                 temp_data.append(output.text)
+
+                # check to start scrape family members
                 if bn == '/about_family_and_relationships':
                     members = output.find_elements(By.TAG_NAME, "a")
                     if members and parse.scrpfm:
@@ -221,19 +244,30 @@ def scrape(parse, brw, items: list):
                         else:
                             print(f'[{color_text("blue", "+")}] collecting data ...')
                         temp_data.append(output2.text + bar)
+
+            # add a bar to separate between users
             temp_data.append(div)
+        # complete addition of all data
         manager.add_data(temp_data)
 
 
-def login(parse, brw):
+def login(parse, brw: Firefox):
+    """
+        Execute the login on the page.
+
+        :param parse: ArgParse instance namespace arguments to change code flow.
+        :param brw: Instance of WebDriver.
+    """
     brw.get(manager.get_url())
 
-    email = WebDriverWait(brw, 10).until(ec.presence_of_element_located((By.NAME, "email")))
-    pwd = WebDriverWait(brw, 10).until(ec.presence_of_element_located((By.NAME, "pass")))
-    ok = WebDriverWait(brw, 10).until(ec.presence_of_element_located((By.NAME, "login")))
+    email = WebDriverWait(brw, 10).until(ec.element_to_be_clickable((By.NAME, "email")))
+    pwd = WebDriverWait(brw, 10).until(ec.element_to_be_clickable((By.NAME, "pass")))
+    ok = WebDriverWait(brw, 10).until(ec.element_to_be_clickable((By.NAME, "login")))
 
     email.clear()
     pwd.clear()
+
+    # custom accounts will only be applied if both fields are not empty
     if parse.email is None or parse.args.pwd is None:
         if parse.verb:
             print(f'[{color_text("white", "*")}] adding fake email: {manager.get_email()}')
@@ -260,10 +294,23 @@ def login(parse, brw):
 
 
 def main(args):
+    """
+        Main function.
+
+        :param args: ArgParse instance namespace arguments to change code flow.
+
+        Where the other functions and flow decisions are executed.
+    """
+
+    # browser settings
     profile = FirefoxProfile()
     options = FirefoxOptions()
+
+    # eliminate pop-ups
     profile.set_preference("dom.popup_maximum", 0)
     profile.set_preference("privacy.popups.showBrowserMessage", False)
+
+    # leaves the browser hidden
     options.add_argument("--headless")
     configs = {"firefox_profile": profile}
     if not args.browser:
@@ -272,6 +319,7 @@ def main(args):
         configs["options"] = options
     if args.verb:
         print(f'[{color_text("white", "*")}] Opening browser ...')
+
     try:
         browser = Firefox(**configs)
     except Exception as error:
@@ -293,7 +341,8 @@ if __name__ == '__main__':
     main(fs.args)
     txt_file = fs.args.txt
     print()
-    if fs.args.out:
+
+    if fs.args.out:  # .txt output creation
         if fs.args.usersnames is None:
             for usr in upload_txt_file(txt_file):
                 with open(rf"{usr}-{str(datetime.datetime.now())[:16]}.txt", 'a+') as file:
