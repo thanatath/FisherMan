@@ -183,7 +183,7 @@ def compact():
         for root, dirs, files in walk(getcwd()):
             for archive in files:
                 _file_name, extension = path.splitext(archive)
-                if (extension == ".txt" and _file_name != "requeriments") or extension == ".jpeg":
+                if (extension.lower() == ".txt" and _file_name != "requeriments") or extension.lower() == ".jpeg":
                     zip_output.write(archive)
                     remove(archive)
     print(f'[{color_text("green", "+")}] successful compression')
