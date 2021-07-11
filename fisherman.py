@@ -85,65 +85,170 @@ class Manager:
         self.__extras__ = {}
 
     def clean_all(self):
+        """
+            Clear all data.
+        """
         self.__data__.clear()
         self.__affluent__.clear()
         self.__extras__.clear()
 
     def clean_data(self):
+        """
+            Clear dict data.
+        """
         self.__data__.clear()
 
     def clean_affluent(self):
+        """
+            Clear affluent data.
+        """
         self.__affluent__.clear()
 
     def clean_extras(self):
+        """
+            Clear extras data.
+        """
         self.__extras__.clear()
 
     def set_email(self, string: str):
+        """
+            Defines the default email to use.
+
+            :param string: Email.
+        """
         self.__fake_email__ = string
 
     def set_pass(self, string: str):
+        """
+            Defines the default password to use.
+
+            :param string: Password.
+        """
         self.__password__ = string
 
     def set_data(self, dictionary: dict):
+        """
+            Updates the data in __date__ in its entirety.
+
+            :param dictionary: dict to update.
+        """
         self.__data__ = dictionary
 
     def set_affluent(self, dictionary: dict):
+        """
+            Updates the data in __affluent__ in its entirety.
+
+            :param dictionary: dict to update.
+        """
         self.__affluent__ = dictionary
 
     def set_extras(self, dictionary: dict):
+        """
+            Updates the data in __extras__ in its entirety.
+
+            :param dictionary: dict to update.
+        """
         self.__extras__ = dictionary
 
     def add_data(self, key, item):
+        """
+            Add a data in __date__ with an identifying key.
+
+            :param key: identification key.
+            :param item: data to be assigned to key.
+        """
         self.__data__[key] = item
 
     def add_affluent(self, key, item):
+        """
+            Add a data in __affluent__ with an identifying key.
+
+            :param key: identification key.
+            :param item: data to be assigned to key.
+        """
         self.__affluent__[key] = item
 
     def add_extras(self, key, item):
+        """
+            Add a data in __extras__ with an identifying key.
+
+            :param key: identification key.
+            :param item: data to be assigned to key.
+        """
         self.__extras__[key] = item
 
     def get_url(self):
+        """
+            Returns default class page.
+
+            :return: default page.
+        """
         return self.__url__
 
     def get_email(self):
+        """
+            Returns default class email.
+
+            :return: default email.
+        """
         return self.__fake_email__
 
     def get_pass(self):
+        """
+            Returns default class password.
+
+            :return: default password.
+        """
         return self.__password__
 
     def get_data(self):
+        """
+            Returns all datas.
+
+            :return: __data__.
+        """
         return self.__data__
 
     def get_affluent(self):
+        """
+            Returns all affluents.
+
+            :return: __affluent__.
+        """
         return self.__affluent__
 
     def get_extras(self):
+        """
+            Returns all extras.
+
+            :return: __extras__.
+        """
         return self.__extras__
 
     def get_all_keys(self):
+        """
+            Return all keys from all dictionaries.
+
+            extras, affluent, data
+            To get all returns:
+            datas = self.get_all_keys()
+
+            For an individual:
+            data = self.get_all_keys()[1]
+        """
         return self.__extras__.keys(), self.__affluent__.keys(), self.__data__.keys()
 
     def get_all_items(self):
+        """
+            Return all items from all dictionaries.
+
+            extras, affluent, data
+            To get all returns:
+            datas = self.get_all_items()
+
+            For an individual:
+            data = self.get_all_items()[1]
+        """
         return self.__extras__.items(), self.__affluent__.items(), self.__data__.items()
 
 
@@ -212,20 +317,26 @@ def exec_script(brw: Firefox, script: str):
 manager = Manager()
 
 
-def extra_data(args, brw: Firefox, user: str):
+def extra_data(parse, brw: Firefox, user: str):
+    """
+        Save other data outside the about user page.
+
+        :param parse: ArgParse instance namespace arguments to change code flow.
+        :param brw: Instance of WebDriver.
+        :param user: username to search.
+    """
     img = exec_script(brw, "return document.getElementsByTagName('image')[0].getAttribute('xlink:href');")
-    followes = exec_script(brw, "return document.getElementsByTagName('a')[20].innerText;")
+    followers = exec_script(brw, "return document.getElementsByTagName('a')[20].innerText;")
     subprocess.run(f"wget {img}", shell=True)
-    if args.txt:
+    if parse.txt:
         _file_name = rf"{user}-{str(datetime.datetime.now())[:16]}.txt"
-        if args.comp:
+        if parse.comp:
             _file_name = f"extraData-{user}.txt"
         with open(_file_name, "w+") as extra:
-            extra.write(followes)
+            extra.write(followers)
     else:
-
         # in the future to add more data variables, put in the list
-        manager.add_extras(user, [followes])
+        manager.add_extras(user, [followers])
 
 
 def scrape(parse, brw: Firefox, items: list):
@@ -355,11 +466,11 @@ def login(parse, brw: Firefox):
         print(f'[{color_text("green", "+")}] successfully logged in')
 
 
-def main(args):
+def main(parse):
     """
         Main function.
 
-        :param args: ArgParse instance namespace arguments to change code flow.
+        :param parse: ArgParse instance namespace arguments to change code flow.
 
         Where the other functions and flow decisions are executed.
     """
@@ -375,11 +486,11 @@ def main(args):
     # leaves the browser hidden
     _options.add_argument("--headless")
     configs = {"firefox_profile": _profile}
-    if not args.browser:
-        if args.verb:
+    if not parse.browser:
+        if parse.verb:
             print(f'[{color_text("blue", "*")}] Starting in hidden mode')
         configs["options"] = _options
-    if args.verb:
+    if parse.verb:
         print(f'[{color_text("white", "*")}] Opening browser ...')
 
     try:
@@ -389,11 +500,11 @@ def main(args):
                          f'The executable "geckodriver" was not found or the browser "Firefox" is not installed.'))
         print(color_text("yellow", f"error details:\n{error}"))
     else:
-        login(args, browser)
-        if args.usersnames is None:
-            scrape(args, browser, upload_txt_file(args.txt))
+        login(parse, browser)
+        if parse.usersnames is None:
+            scrape(parse, browser, upload_txt_file(parse.txt))
         else:
-            scrape(args, browser, args.usersnames)
+            scrape(parse, browser, parse.usersnames)
         browser.quit()
 
 
