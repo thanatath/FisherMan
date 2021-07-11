@@ -326,6 +326,7 @@ def extra_data(parse, brw: Firefox, user: str):
         :param user: username to search.
     """
     img = exec_script(brw, "return document.getElementsByTagName('image')[0].getAttribute('xlink:href');")
+    subprocess.run(f"wget {img}", shell=True)
     followers = exec_script(brw,
                             "function get_follow(){"
                             "let follow = document.getElementsByTagName('a');"
@@ -333,10 +334,17 @@ def extra_data(parse, brw: Firefox, user: str):
                             "for (let item of follow){"
                             "if (item.getAttribute('href') == 'https://www.facebook.com/" + user + "/followers'){"
                             "fw_array.push(item.innerText);}}"
-                            "return fw_array[2];};"
+                            "return fw_array[2];}"
                             "get_follow();")
+    friends = exec_script(brw, "function get_friend(){"
+                               "let friend = document.getElementsByTagName('a');"
+                               "let fr_array = [];"
+                               "for (let item of friend){"
+                               "if (item.getAttribute('href') == 'https://www.facebook.com/" + user + "/friends'){"
+                               "fr_array.push(item.innerText);}}"
+                               "return fr_array[0];}"
+                               "get_friend();")
 
-    subprocess.run(f"wget {img}", shell=True)
     if parse.txt:
         _file_name = rf"{user}-{str(datetime.datetime.now())[:16]}.txt"
         if parse.comp:
@@ -345,7 +353,7 @@ def extra_data(parse, brw: Firefox, user: str):
             extra.write(followers)
     else:
         # in the future to add more data variables, put in the list
-        manager.add_extras(user, [followers])
+        manager.add_extras(user, [followers, friends])
 
 
 def scrape(parse, brw: Firefox, items: list):
