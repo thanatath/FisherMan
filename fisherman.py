@@ -1,9 +1,10 @@
 #! /usr/bin/env python3
 
 import datetime
+import subprocess
 from argparse import ArgumentParser
 from base64 import b64decode
-from os import path, walk, remove, getcwd, system
+from os import path, walk, remove, getcwd
 from re import findall
 from zipfile import ZipFile, ZIP_DEFLATED
 
@@ -79,9 +80,9 @@ class Manager:
         self.__url__ = 'https://facebook.com/'
         self.__fake_email__ = 'submarino.sub.aquatico@outlook.com'
         self.__password__ = 'MDBjbGVwdG9tYW5pYWNvMDA='
-        self.__data__ = []
-        self.__affluent__ = []
-        self.__extras__ = []
+        self.__data__ = {}
+        self.__affluent__ = {}
+        self.__extras__ = {}
 
     def clean_all(self):
         self.__data__.clear()
@@ -103,23 +104,23 @@ class Manager:
     def set_pass(self, string: str):
         self.__password__ = string
 
-    def set_data(self, item_list: list):
-        self.__data__ = item_list
+    def set_data(self, dictionary: dict):
+        self.__data__ = dictionary
 
-    def set_affluent(self, item_list: list):
-        self.__affluent__ = item_list
+    def set_affluent(self, dictionary: dict):
+        self.__affluent__ = dictionary
 
-    def set_extras(self, item_list: list):
-        self.__extras__ = item_list
+    def set_extras(self, dictionary: dict):
+        self.__extras__ = dictionary
 
-    def add_data(self, string):
-        self.__data__.append(string)
+    def add_data(self, key, item):
+        self.__data__[key] = item
 
-    def add_affluent(self, string):
-        self.__affluent__.append(string)
+    def add_affluent(self, key, item):
+        self.__affluent__[key] = item
 
-    def add_extras(self, string):
-        self.__extras__.append(string)
+    def add_extras(self, key, item):
+        self.__extras__[key] = item
 
     def get_url(self):
         return self.__url__
@@ -138,6 +139,12 @@ class Manager:
 
     def get_extras(self):
         return self.__extras__
+
+    def get_all_keys(self):
+        return self.__extras__.keys(), self.__affluent__.keys(), self.__data__.keys()
+
+    def get_all_items(self):
+        return self.__extras__.items(), self.__affluent__.items(), self.__data__.items()
 
 
 def update():
@@ -207,8 +214,8 @@ manager = Manager()
 
 def extra_data(args, brw: Firefox, user: str):
     img = exec_script(brw, "return document.getElementsByTagName('image')[0].getAttribute('xlink:href');")
-    followes = exec_script(brw, "return document.getElementsByTagNae('a')[20].innerText;")
-    system(rf"wget '{img}'")
+    followes = exec_script(brw, "return document.getElementsByTagName('a')[20].innerText;")
+    subprocess.run(f"wget {img}", shell=True)
     if args.txt:
         _file_name = rf"{user}-{str(datetime.datetime.now())[:16]}.txt"
         if args.comp:
@@ -218,7 +225,7 @@ def extra_data(args, brw: Firefox, user: str):
     else:
 
         # in the future to add more data variables, put in the list
-        manager.add_extras([followes])
+        manager.add_extras(user, [followes])
 
 
 def scrape(parse, brw: Firefox, items: list):
@@ -241,10 +248,10 @@ def scrape(parse, brw: Firefox, items: list):
         # here modifies the branch list to iterate only the parameter items --specify
         if parse.index:
             temp_branch = []
-            for i in parse.index:
-                temp_branch.append(branch[i])
+            for index in parse.index:
+                temp_branch.append(branch[index])
                 if parse.verb:
-                    print(f'[{color_text("green", "+")}] branch {i} added to url')
+                    print(f'[{color_text("green", "+")}] branch {index} added to url')
             branch = temp_branch
 
         # search for extra data
@@ -270,7 +277,7 @@ def scrape(parse, brw: Firefox, items: list):
                     members = output.find_elements(By.TAG_NAME, "a")
                     if members and parse.scrpfm:
                         for link in members:
-                            manager.add_affluent(link.get_attribute('href'))
+                            manager.add_affluent(usrs, link.get_attribute('href'))
 
         # this scope will only be executed if the list of "affluents" is not empty.
         if manager.get_affluent():
@@ -303,7 +310,7 @@ def scrape(parse, brw: Firefox, items: list):
             # add a bar to separate between users
             temp_data.append(div)
         # complete addition of all data
-        manager.add_data(temp_data)
+        manager.add_data(usrs, temp_data)
 
 
 def login(parse, brw: Firefox):
@@ -358,20 +365,20 @@ def main(args):
     """
 
     # browser settings
-    profile = FirefoxProfile()
-    options = FirefoxOptions()
+    _profile = FirefoxProfile()
+    _options = FirefoxOptions()
 
     # eliminate pop-ups
-    profile.set_preference("dom.popup_maximum", 0)
-    profile.set_preference("privacy.popups.showBrowserMessage", False)
+    _profile.set_preference("dom.popup_maximum", 0)
+    _profile.set_preference("privacy.popups.showBrowserMessage", False)
 
     # leaves the browser hidden
-    options.add_argument("--headless")
-    configs = {"firefox_profile": profile}
+    _options.add_argument("--headless")
+    configs = {"firefox_profile": _profile}
     if not args.browser:
         if args.verb:
             print(f'[{color_text("blue", "*")}] Starting in hidden mode')
-        configs["options"] = options
+        configs["options"] = _options
     if args.verb:
         print(f'[{color_text("white", "*")}] Opening browser ...')
 
@@ -404,7 +411,7 @@ if __name__ == '__main__':
                 if fs.args.comp:
                     file_name = usr + ".txt"
                 with open(file_name, 'a+') as file:
-                    for data_list in manager.get_data():
+                    for data_list in manager.get_data()[usr]:
                         file.writelines(data_list)
 
         else:
@@ -413,7 +420,7 @@ if __name__ == '__main__':
                 if fs.args.comp:
                     file_name = usr2 + ".txt"
                 with open(file_name, 'a+') as file:
-                    for data_list in manager.get_data():
+                    for data_list in manager.get_data()[usr2]:
                         file.writelines(data_list)
 
         print(f'[{color_text("green", "+")}] .txt file(s) created')
@@ -425,14 +432,14 @@ if __name__ == '__main__':
     else:
         print(color_text('green', 'Information found:'))
         print('-' * 60)
-        for data_list in manager.get_data():
-            for data in data_list:
+        for profile in manager.get_all_keys()[2]:
+            for data in manager.get_data()[profile]:
                 print(data)
                 print()
-                print('-' * 50)
+                print('-' * 60)
 
-        print("\n\n\n" + '=' * 70 + "\n\n\n")
-        for data_extra in manager.get_extras():
-            print("EXTRAS:")
-            print(data_extra)
-            print("\n" + "*" * 70 + "\n")
+            if fs.args.several:
+                print("EXTRAS:")
+                for data_extra in manager.get_extras()[profile]:
+                    print(data_extra)
+                    print("\n" + "*" * 70 + "\n")
