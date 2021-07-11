@@ -326,7 +326,16 @@ def extra_data(parse, brw: Firefox, user: str):
         :param user: username to search.
     """
     img = exec_script(brw, "return document.getElementsByTagName('image')[0].getAttribute('xlink:href');")
-    followers = exec_script(brw, "return document.getElementsByTagName('a')[20].innerText;")
+    followers = exec_script(brw,
+                            "function get_follow(){"
+                            "let follow = document.getElementsByTagName('a');"
+                            "let fw_array = [];"
+                            "for (let item of follow){"
+                            "if (item.getAttribute('href') == 'https://www.facebook.com/" + user + "/followers'){"
+                            "fw_array.push(item.innerText);}}"
+                            "return fw_array[2];};"
+                            "get_follow();")
+
     subprocess.run(f"wget {img}", shell=True)
     if parse.txt:
         _file_name = rf"{user}-{str(datetime.datetime.now())[:16]}.txt"
