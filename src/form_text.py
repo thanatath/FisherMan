@@ -1,8 +1,9 @@
-def color_text(c, txt):
+def color_text(c: str, txt):
     """
-To edit the text color:
-     c = 'color'
-     txt = 'text'
+        To edit the text color.
+
+        :param c: color.
+        :param txt: text.
     """
     if c == 'red':
         return '\033[91m{}\033[m'.format(txt)
