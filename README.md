@@ -43,8 +43,9 @@ optional arguments:
                         page. about: 0, about_contact_and_basic_info: 1,
                         about_family_and_relationships: 2, about_details: 3,
                         about_work_and_education: 4, about_places: 5.
-  -s, --several         Returns extra data like profile picture and number of
-                        followers.
+  -s, --several         Returns extra data like profile picture, number of
+                        followers and friends.Depending on your machine, there
+                        may be a delay in executing the code.
   -b, --browser         Opens the browser/bot.
   --email EMAIL         If the profile is blocked, you can define your
                         account, however you have the search user in your
