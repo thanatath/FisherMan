@@ -324,12 +324,16 @@ def extra_data(parse, brw: Firefox, user: str):
     _xpath_friend = '/html/body/div[1]/div/div[1]/div/div[3]/div/div/div[1]/div[1]/div/div/div[3]/div/div/div/div[1]' \
                     '/div/div/div[1]/div/div/div/div/div/div/a[3]/div[1]/span'
 
+    # profile image collection
     try:
         img = WebDriverWait(brw, 10).until(ec.visibility_of_element_located((By.XPATH, _xpath_img)))
     except selenium.common.exceptions.NoSuchElementException:
         print(f'[{color_text("yellow", "-")}] non-existent element')
     except selenium.common.exceptions.TimeoutException:
-        print(f'[{color_text("yellow", "-")}] time limit exceeded')
+        if parse.verb:
+            print(f'[{color_text("yellow", "-")}] timed out to get the profile image')
+        else:
+            print(f'[{color_text("yellow", "-")}] time limit exceeded')
     else:
         out = getoutput(f"wget {img}")
         if "403: Forbidden" in out:
@@ -337,34 +341,44 @@ def extra_data(parse, brw: Firefox, user: str):
         else:
             print(out)
 
+    # follower collection
     try:
         WebDriverWait(brw, 10).until(ec.visibility_of_element_located((By.XPATH, _xpath_follow)))
     except selenium.common.exceptions.NoSuchElementException:
         print(f'[{color_text("yellow", "-")}] non-existent element')
         followers = None
     except selenium.common.exceptions.TimeoutException:
-        print(f'[{color_text("yellow", "-")}] time limit exceeded')
+        if parse.verb:
+            print(f'[{color_text("yellow", "-")}] timed out to get the followers')
+        else:
+            print(f'[{color_text("yellow", "-")}] time limit exceeded')
         followers = None
     else:
         followers = brw.find_element_by_xpath(_xpath_follow).text
 
+    # friends collection
     try:
         WebDriverWait(brw, 10).until(ec.visibility_of_element_located((By.XPATH, _xpath_friend)))
     except selenium.common.exceptions.NoSuchElementException:
         print(f'[{color_text("yellow", "-")}] non-existent element')
         friends = None
     except selenium.common.exceptions.TimeoutException:
-        print(f'[{color_text("yellow", "-")}] time limit exceeded')
+        if parse.verb:
+            print(f'[{color_text("yellow", "-")}] timed out to get the friends')
+        else:
+            print(f'[{color_text("yellow", "-")}] time limit exceeded')
         friends = None
     else:
+        # the return is a string containing both the word "friends" and the number of friends
+        # this IF is to not only return the pure word
         temp = brw.find_element_by_xpath(_xpath_friend).text
-        if len(temp) > 6:
+        if len(temp) > 6 and len(temp) > 7:
             friends = temp
         else:
             friends = None
 
     if parse.txt:
-        _file_name = rf"{user}-{str(datetime.datetime.now())[:16]}.txt"
+        _file_name = rf"extraData-{user}-{str(datetime.datetime.now())[:16]}.txt"
         if parse.comp:
             _file_name = f"extraData-{user}.txt"
         with open(_file_name, "w+") as extra:
@@ -527,14 +541,14 @@ def main(parse):
     _profile.set_preference("privacy.popups.showBrowserMessage", False)
 
     # incognito
-    # _profile.set_preference("browser.privatebrowsing.autostart", True)
-    # _options.add_argument("--incognito")
+    _profile.set_preference("browser.privatebrowsing.autostart", True)
+    _options.add_argument("--incognito")
 
     # arguments
-    # _options.add_argument('--disable-blink-features=AutomationControlled')
-    # _options.add_argument("--disable-extensions")
-    # _options.add_argument('--profile-directory=Default')
-    # _options.add_argument("--disable-plugins-discovery")
+    _options.add_argument('--disable-blink-features=AutomationControlled')
+    _options.add_argument("--disable-extensions")
+    _options.add_argument('--profile-directory=Default')
+    _options.add_argument("--disable-plugins-discovery")
 
     configs = {"firefox_profile": _profile, "options": _options}
     if not parse.browser:
@@ -553,7 +567,7 @@ def main(parse):
         print(color_text("yellow", f"error details:\n{error}"))
     else:
         # others arguments
-        # browser.delete_all_cookies()
+        browser.delete_all_cookies()
 
         login(parse, browser)
         if parse.usersnames is None:
