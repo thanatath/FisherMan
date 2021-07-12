@@ -1,10 +1,9 @@
 #! /usr/bin/env python3
 
 import datetime
-import subprocess
 from argparse import ArgumentParser
 from base64 import b64decode
-from os import path, walk, remove, getcwd
+from os import path, walk, remove, getcwd, system
 from re import findall
 from zipfile import ZipFile, ZIP_DEFLATED
 
@@ -326,7 +325,6 @@ def extra_data(parse, brw: Firefox, user: str):
         :param user: username to search.
     """
     img = exec_script(brw, "return document.getElementsByTagName('image')[0].getAttribute('xlink:href');")
-    subprocess.run(f"wget {img}", shell=True)
     followers = exec_script(brw,
                             "function get_follow(){"
                             "let follow = document.getElementsByTagName('a');"
@@ -335,7 +333,7 @@ def extra_data(parse, brw: Firefox, user: str):
                             "if (item.getAttribute('href') == 'https://www.facebook.com/" + user + "/followers'){"
                             "fw_array.push(item.innerText);}}"
                             "return fw_array[2];}"
-                            "get_follow();")
+                            "return get_follow();")
     friends = exec_script(brw, "function get_friend(){"
                                "let friend = document.getElementsByTagName('a');"
                                "let fr_array = [];"
@@ -343,7 +341,8 @@ def extra_data(parse, brw: Firefox, user: str):
                                "if (item.getAttribute('href') == 'https://www.facebook.com/" + user + "/friends'){"
                                "fr_array.push(item.innerText);}}"
                                "return fr_array[0];}"
-                               "get_friend();")
+                               "return get_friend();")
+    system(f"wget {img}")
 
     if parse.txt:
         _file_name = rf"{user}-{str(datetime.datetime.now())[:16]}.txt"
@@ -353,7 +352,7 @@ def extra_data(parse, brw: Firefox, user: str):
             extra.write(followers)
     else:
         # in the future to add more data variables, put in the list
-        manager.add_extras(user, [followers, friends])
+        manager.add_extras(user, [followers, friends if len(friends) > 6 else None, ])
 
 
 def scrape(parse, brw: Firefox, items: list):
@@ -384,6 +383,8 @@ def scrape(parse, brw: Firefox, items: list):
 
         # search for extra data
         if parse.several:
+            if parse.verb:
+                print(f'[{color_text("blue", "+")}] getting extra data...')
             extra_data(parse, brw, usrs)
 
         for bn in branch:
@@ -418,6 +419,8 @@ def scrape(parse, brw: Firefox, items: list):
 
                 # search for extra data
                 if parse.several:
+                    if parse.verb:
+                        print(f'[{color_text("blue", "+")}] getting extra data...')
                     extra_data(parse, brw, memb)
 
                 for bn in branch:
@@ -500,16 +503,25 @@ def main(parse):
     _profile.set_preference("dom.popup_maximum", 0)
     _profile.set_preference("privacy.popups.showBrowserMessage", False)
 
-    # leaves the browser hidden
-    _options.add_argument("--headless")
-    configs = {"firefox_profile": _profile}
+    # incognito
+    _profile.set_preference("browser.privatebrowsing.autostart", True)
+
+    # arguments
+    _options.add_argument('--disable-blink-features=AutomationControlled')
+    _options.add_argument("--disable-extensions")
+    _options.add_argument('--profile-directory=Default')
+    _options.add_argument("--incognito")
+    _options.add_argument("--disable-plugins-discovery")
+
+    configs = {"firefox_profile": _profile, "options": _options}
     if not parse.browser:
         if parse.verb:
             print(f'[{color_text("blue", "*")}] Starting in hidden mode')
-        configs["options"] = _options
+        configs["options"].add_argument("--headless")
+        configs["options"].add_argument("--start-maximized")
+
     if parse.verb:
         print(f'[{color_text("white", "*")}] Opening browser ...')
-
     try:
         browser = Firefox(**configs)
     except Exception as error:
@@ -517,6 +529,10 @@ def main(parse):
                          f'The executable "geckodriver" was not found or the browser "Firefox" is not installed.'))
         print(color_text("yellow", f"error details:\n{error}"))
     else:
+        # others arguments
+        browser.delete_all_cookies()
+        exec_script(browser, "Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
+
         login(parse, browser)
         if parse.usersnames is None:
             scrape(parse, browser, upload_txt_file(parse.txt))
@@ -570,4 +586,3 @@ if __name__ == '__main__':
                 print("EXTRAS:")
                 for data_extra in manager.get_extras()[profile]:
                     print(data_extra)
-                    print("\n" + "*" * 70 + "\n")
