@@ -3,10 +3,12 @@
 import datetime
 from argparse import ArgumentParser
 from base64 import b64decode
-from os import path, walk, remove, getcwd, system
+from os import path, walk, remove, getcwd
 from re import findall
+from subprocess import getoutput
 from zipfile import ZipFile, ZIP_DEFLATED
 
+import selenium.common.exceptions
 from requests import get
 from selenium.webdriver import Firefox, FirefoxOptions, FirefoxProfile
 from selenium.webdriver.common.by import By
@@ -300,19 +302,6 @@ def compact():
     print(f'[{color_text("green", "+")}] successful compression')
 
 
-def exec_script(brw: Firefox, script: str):
-    """
-        Runs a javascript script in the browser.
-
-        :param brw: Instance of WebDriver.
-        :param script: Script to be run on console.
-        :return: A data script.
-
-        Example script parameter: "return document.getElementById("fish");"
-    """
-    return brw.execute_script(script)
-
-
 manager = Manager()
 
 
@@ -324,25 +313,55 @@ def extra_data(parse, brw: Firefox, user: str):
         :param brw: Instance of WebDriver.
         :param user: username to search.
     """
-    img = exec_script(brw, "return document.getElementsByTagName('image')[0].getAttribute('xlink:href');")
-    followers = exec_script(brw,
-                            "function get_follow(){"
-                            "let follow = document.getElementsByTagName('a');"
-                            "let fw_array = [];"
-                            "for (let item of follow){"
-                            "if (item.getAttribute('href') == 'https://www.facebook.com/" + user + "/followers'){"
-                            "fw_array.push(item.innerText);}}"
-                            "return fw_array[2];}"
-                            "return get_follow();")
-    friends = exec_script(brw, "function get_friend(){"
-                               "let friend = document.getElementsByTagName('a');"
-                               "let fr_array = [];"
-                               "for (let item of friend){"
-                               "if (item.getAttribute('href') == 'https://www.facebook.com/" + user + "/friends'){"
-                               "fr_array.push(item.innerText);}}"
-                               "return fr_array[0];}"
-                               "return get_friend();")
-    system(f"wget {img}")
+    brw.get(f"{manager.get_url() + user}")
+
+    _xpath_img = '//*[@id="mount_0_0_qn"]/div/div[1]/div/div[3]/div/div/div[1]/div[1]/div/div/div[1]/div[2]/div/div/' \
+                 'div[1]/div/div/div/a/div/svg/g/image'
+
+    _xpath_follow = '//*[@id="mount_0_0_qn"]/div/div[1]/div/div[3]/div/div/div[1]/div[1]/div/div/div[4]/div[1]/div/' \
+                    'div/div/div/div/div/div/div[1]/div[2]/div/div[2]/span/span/a'
+
+    _xpath_friend = '/html/body/div[1]/div/div[1]/div/div[3]/div/div/div[1]/div[1]/div/div/div[3]/div/div/div/div[1]' \
+                    '/div/div/div[1]/div/div/div/div/div/div/a[3]/div[1]/span'
+
+    try:
+        img = WebDriverWait(brw, 10).until(ec.visibility_of_element_located((By.XPATH, _xpath_img)))
+    except selenium.common.exceptions.NoSuchElementException:
+        print(f'[{color_text("yellow", "-")}] non-existent element')
+    except selenium.common.exceptions.TimeoutException:
+        print(f'[{color_text("yellow", "-")}] time limit exceeded')
+    else:
+        out = getoutput(f"wget {img}")
+        if "403: Forbidden" in out:
+            print(f'[{color_text("red", "-")}] ERROR 403: Forbidden. Unable to download profile picture')
+        else:
+            print(out)
+
+    try:
+        WebDriverWait(brw, 10).until(ec.visibility_of_element_located((By.XPATH, _xpath_follow)))
+    except selenium.common.exceptions.NoSuchElementException:
+        print(f'[{color_text("yellow", "-")}] non-existent element')
+        followers = None
+    except selenium.common.exceptions.TimeoutException:
+        print(f'[{color_text("yellow", "-")}] time limit exceeded')
+        followers = None
+    else:
+        followers = brw.find_element_by_xpath(_xpath_follow).text
+
+    try:
+        WebDriverWait(brw, 10).until(ec.visibility_of_element_located((By.XPATH, _xpath_friend)))
+    except selenium.common.exceptions.NoSuchElementException:
+        print(f'[{color_text("yellow", "-")}] non-existent element')
+        friends = None
+    except selenium.common.exceptions.TimeoutException:
+        print(f'[{color_text("yellow", "-")}] time limit exceeded')
+        friends = None
+    else:
+        temp = brw.find_element_by_xpath(_xpath_friend).text
+        if len(temp) > 6:
+            friends = temp
+        else:
+            friends = None
 
     if parse.txt:
         _file_name = rf"{user}-{str(datetime.datetime.now())[:16]}.txt"
@@ -350,9 +369,10 @@ def extra_data(parse, brw: Firefox, user: str):
             _file_name = f"extraData-{user}.txt"
         with open(_file_name, "w+") as extra:
             extra.write(followers)
+            extra.write(friends)
     else:
         # in the future to add more data variables, put in the list
-        manager.add_extras(user, [followers, friends if len(friends) > 6 else None, ])
+        manager.add_extras(user, [followers, friends])
 
 
 def scrape(parse, brw: Firefox, items: list):
@@ -405,14 +425,17 @@ def scrape(parse, brw: Firefox, items: list):
                 if bn == '/about_family_and_relationships':
                     members = output.find_elements(By.TAG_NAME, "a")
                     if members and parse.scrpfm:
+                        members_list = []
                         for link in members:
-                            manager.add_affluent(usrs, link.get_attribute('href'))
+                            members_list.append(link.get_attribute('href'))
+                        manager.add_affluent(usrs, members_list)
 
         # this scope will only be executed if the list of "affluents" is not empty.
         if manager.get_affluent():
             div = "\n\n\n" + '=' * 70 + "\n\n\n"
             bar = "\n" + "*" * 70 + "\n"
-            for memb in manager.get_affluent():
+
+            for memb in manager.get_affluent()[usrs]:
                 print()
                 print(f'[{color_text("white", "*")}] Coming in {memb}')
                 temp_data.append(div)
@@ -504,14 +527,14 @@ def main(parse):
     _profile.set_preference("privacy.popups.showBrowserMessage", False)
 
     # incognito
-    _profile.set_preference("browser.privatebrowsing.autostart", True)
+    # _profile.set_preference("browser.privatebrowsing.autostart", True)
+    # _options.add_argument("--incognito")
 
     # arguments
-    _options.add_argument('--disable-blink-features=AutomationControlled')
-    _options.add_argument("--disable-extensions")
-    _options.add_argument('--profile-directory=Default')
-    _options.add_argument("--incognito")
-    _options.add_argument("--disable-plugins-discovery")
+    # _options.add_argument('--disable-blink-features=AutomationControlled')
+    # _options.add_argument("--disable-extensions")
+    # _options.add_argument('--profile-directory=Default')
+    # _options.add_argument("--disable-plugins-discovery")
 
     configs = {"firefox_profile": _profile, "options": _options}
     if not parse.browser:
@@ -530,8 +553,7 @@ def main(parse):
         print(color_text("yellow", f"error details:\n{error}"))
     else:
         # others arguments
-        browser.delete_all_cookies()
-        exec_script(browser, "Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
+        # browser.delete_all_cookies()
 
         login(parse, browser)
         if parse.usersnames is None:
