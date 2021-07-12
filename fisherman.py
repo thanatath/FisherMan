@@ -340,7 +340,7 @@ def extra_data(parse, brw: Firefox, user: str):
         if "403: Forbidden" in out:
             print(f'[{color_text("red", "-")}] ERROR 403: Forbidden. Unable to download profile picture')
         else:
-            print(out)
+            print(f'[{color_text("green", "+")}] downloaded profile picture')
 
     # follower collection
     try:
