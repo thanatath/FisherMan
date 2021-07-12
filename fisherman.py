@@ -46,7 +46,8 @@ class Fisher:
                                  "about_places: 5.")
 
         parser.add_argument("-s", "--several", action="store_true", required=False, dest="several",
-                            help="Returns extra data like profile picture and number of followers.")
+                            help="Returns extra data like profile picture, number of followers and friends."
+                                 "Depending on your machine, there may be a delay in executing the code.")
 
         parser.add_argument('-b', '--browser', action='store_true', dest='browser', required=False,
                             help='Opens the browser/bot.')
