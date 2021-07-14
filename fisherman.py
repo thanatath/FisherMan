@@ -25,24 +25,23 @@ __version__ = "3.2.0"
 class Fisher:
     def __init__(self):
         parser = ArgumentParser(description=f'{module_name} (Version {__version__})')
-        exclude_group = parser.add_mutually_exclusive_group()
+        exclusive_group = parser.add_mutually_exclusive_group()
 
         parser.add_argument('--version', action='version', version=f'%(prog)s {__version__}',
                             help='Shows the current version of the program.')
 
-        exclude_group.add_argument('-u', '--username', action='store', nargs='+', required=False,
-                                   type=str, help='Defines one or more users for the search.')
+        exclusive_group.add_argument('-u', '--username', action='append', nargs='+', required=False,
+                                     type=str, help='Defines one or more users for the search.')
 
-        exclude_group.add_argument('--use-txt', action='store', required=False, dest='txt', metavar='TXT_FILE',
-                                   type=str,
-                                   help='Replaces the USERSNAMES parameter with a user list in a txt.')
+        exclusive_group.add_argument('--use-txt', action='store', required=False, dest='txt', metavar='TXT_FILE',
+                                     type=str, nargs=1,
+                                     help='Replaces the USERSNAMES parameter with a user list in a txt.')
 
         parser.add_argument('-sf', '--scrape-family', action='store_true', required=False, dest='scrpfm',
                             help='If this parameter is passed, '
                                  'the information from family members will be scraped if available.')
 
-        parser.add_argument("--specify", action="store", nargs="+", required=False,
-                            type=int, choices=[0, 1, 2, 3, 4, 5],
+        parser.add_argument("--specify", action="store", nargs="+", required=False, type=int, choices=[0, 1, 2, 3, 4, 5],
                             help="Use the index number to return a specific part of the page. "
                                  "about: 0, about_contact_and_basic_info: 1, "
                                  "about_family_and_relationships: 2, "
@@ -58,11 +57,12 @@ class Fisher:
                             help='Opens the browser/bot.')
 
         parser.add_argument('--email', action='store', metavar='EMAIL',
-                            required=False, type=str,
+                            required=False, type=str, nargs=1,
                             help='If the profile is blocked, you can define your account, '
                                  'however you have the search user in your friends list.')
 
         parser.add_argument('--password', action='store', metavar='PASSWORD', dest='pwd', required=False, type=str,
+                            nargs=1,
                             help='Set the password for your facebook account, '
                                  'this parameter has to be used with --email.')
 
