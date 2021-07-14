@@ -1,6 +1,6 @@
 # FisherMan
 [![GitHub license](https://img.shields.io/github/license/Godofcoffe/FisherMan)](https://github.com/Godofcoffe/FisherMan/blob/main/LICENSE)
-![badge](https://img.shields.io/badge/version-3.1.0-blue)
+![badge](https://img.shields.io/badge/version-3.2.0-blue)
 ![badge](https://img.shields.io/badge/python-%3E%3D3.8-orange)
 
 ### Search for public profile information on Facebook
@@ -24,18 +24,22 @@ $ python3 -m pip install -r requirements.txt
 ## Usage
 ```
 $ python3 fisherman.py --help
-usage: fisherman.py [-h] [--version] [-u USERSNAMES [USERSNAMES ...]] [-sf]
+usage: fisherman.py [-h] [--version] [-u USERNAME [USERNAME ...] | --use-txt
+                    TXT_FILE | -i ID [ID ...]] [-sf]
                     [--specify {0,1,2,3,4,5} [{0,1,2,3,4,5} ...]] [-s] [-b]
-                    [--email EMAIL] [--password PASSWORD] [--use-txt TXT_FILE]
-                    [-o] [-c] [-v]
+                    [--email EMAIL] [--password PASSWORD] [-o] [-c] [-v]
 
-FisherMan: Extract information from facebook profiles. (Version 3.1.0)
+FisherMan: Extract information from facebook profiles. (Version 3.2.0)
 
 optional arguments:
   -h, --help            show this help message and exit
   --version             Shows the current version of the program.
-  -u USERSNAMES [USERSNAMES ...], --username USERSNAMES [USERSNAMES ...]
+  -u USERNAME [USERNAME ...], --username USERNAME [USERNAME ...]
                         Defines one or more users for the search.
+  --use-txt TXT_FILE    Replaces the USERNAME parameter with a user list in a
+                        txt.
+  -i ID [ID ...], --id ID [ID ...]
+                        Set the profile identification number.
   -sf, --scrape-family  If this parameter is passed, the information from
                         family members will be scraped if available.
   --specify {0,1,2,3,4,5} [{0,1,2,3,4,5} ...]
@@ -44,7 +48,7 @@ optional arguments:
                         about_family_and_relationships: 2, about_details: 3,
                         about_work_and_education: 4, about_places: 5.
   -s, --several         Returns extra data like profile picture, number of
-                        followers and friends.Depending on your machine, there
+                        followers and friends. Depending on your machine, there
                         may be a delay in executing the code.
   -b, --browser         Opens the browser/bot.
   --email EMAIL         If the profile is blocked, you can define your
@@ -52,17 +56,14 @@ optional arguments:
                         friends list.
   --password PASSWORD   Set the password for your facebook account, this
                         parameter has to be used with --email.
-  --use-txt TXT_FILE    Replaces the USERSNAMES parameter with a user list in
-                        a txt.
   -o, --file-output     Save the output data to a .txt file.
   -c, --compact         Compress all .txt files. Use together with -o.
   -v, -d, --verbose, --debug
                         It shows in detail the data search process.
 ```
-To search for a user
-```
-python3 fisherman.py -u name name.profile name.profile2
-```
+To search for a user:
+  * User name: `python3 fisherman.py -u name name.profile name.profile2`
+  * ID: `python3 fisherman.py -i 000000000000`
 
 The username must be found on the facebook profile link, such as:
 ```
@@ -87,10 +88,18 @@ python3 fisherman.py --email youremail@email.com --password yourpass
   ```
   With a file with dozens of names on each line, you can make a complete "scan" taking your information and even your family members and will be compressed into a .zip at the output.
 
+
 * For specific parts of the account:
-  *  Basic data: `python3 fisherman.py -u name --specify 0`
+  * Basic data: `python3 fisherman.py -u name --specify 0`
   * Family and relationship: `python3 -u name --specify 2`
   * It is still possible to mix: `python3 fisherman.py -u name --specify 0 2`
+  
+  
+* To get additional things like profile picture, how many followers and how many friends:
+  ```
+  python3 fisherman.py -u name -s
+  ```
+  **Warning: This functionality is still a little unstable**
 
 ## *This tool only extracts information that is public, not use for private or illegal purposes.*
 
