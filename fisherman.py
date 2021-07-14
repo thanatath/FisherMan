@@ -19,24 +19,29 @@ from src.form_text import color_text
 from src.logo import name
 
 module_name = 'FisherMan: Extract information from facebook profiles.'
-__version__ = "3.1.0"
+__version__ = "3.2.0"
 
 
 class Fisher:
     def __init__(self):
         parser = ArgumentParser(description=f'{module_name} (Version {__version__})')
+        exclude_group = parser.add_mutually_exclusive_group()
 
         parser.add_argument('--version', action='version', version=f'%(prog)s {__version__}',
                             help='Shows the current version of the program.')
 
-        parser.add_argument('-u', '--username', action='store', nargs='+', required=False, dest='usersnames',
-                            type=str, help='Defines one or more users for the search.')
+        exclude_group.add_argument('-u', '--username', action='store', nargs='+', required=False,
+                                   type=str, help='Defines one or more users for the search.')
+
+        exclude_group.add_argument('--use-txt', action='store', required=False, dest='txt', metavar='TXT_FILE',
+                                   type=str,
+                                   help='Replaces the USERSNAMES parameter with a user list in a txt.')
 
         parser.add_argument('-sf', '--scrape-family', action='store_true', required=False, dest='scrpfm',
                             help='If this parameter is passed, '
                                  'the information from family members will be scraped if available.')
 
-        parser.add_argument("--specify", action="store", nargs="+", required=False, dest="index",
+        parser.add_argument("--specify", action="store", nargs="+", required=False,
                             type=int, choices=[0, 1, 2, 3, 4, 5],
                             help="Use the index number to return a specific part of the page. "
                                  "about: 0, about_contact_and_basic_info: 1, "
@@ -45,14 +50,14 @@ class Fisher:
                                  "about_work_and_education: 4, "
                                  "about_places: 5.")
 
-        parser.add_argument("-s", "--several", action="store_true", required=False, dest="several",
+        parser.add_argument("-s", "--several", action="store_true", required=False,
                             help="Returns extra data like profile picture, number of followers and friends."
                                  "Depending on your machine, there may be a delay in executing the code.")
 
-        parser.add_argument('-b', '--browser', action='store_true', dest='browser', required=False,
+        parser.add_argument('-b', '--browser', action='store_true', required=False,
                             help='Opens the browser/bot.')
 
-        parser.add_argument('--email', action='store', metavar='EMAIL', dest='email',
+        parser.add_argument('--email', action='store', metavar='EMAIL',
                             required=False, type=str,
                             help='If the profile is blocked, you can define your account, '
                                  'however you have the search user in your friends list.')
@@ -61,16 +66,13 @@ class Fisher:
                             help='Set the password for your facebook account, '
                                  'this parameter has to be used with --email.')
 
-        parser.add_argument('--use-txt', action='store', required=False, dest='txt', metavar='TXT_FILE', type=str,
-                            help='Replaces the USERSNAMES parameter with a user list in a txt.')
-
         parser.add_argument('-o', '--file-output', action='store_true', required=False, dest='out',
                             help='Save the output data to a .txt file.')
 
-        parser.add_argument("-c", "--compact", action="store_true", required=False, dest="comp",
+        parser.add_argument("-c", "--compact", action="store_true", required=False,
                             help="Compress all .txt files. Use together with -o.")
 
-        parser.add_argument('-v', '-d', '--verbose', '--debug', action='store_true', required=False, dest='verb',
+        parser.add_argument('-v', '-d', '--verbose', '--debug', action='store_true', required=False,
                             help='It shows in detail the data search process.')
 
         print(color_text('blue', name))
@@ -331,7 +333,7 @@ def extra_data(parse, brw: Firefox, user: str):
     except selenium.common.exceptions.NoSuchElementException:
         print(f'[{color_text("yellow", "-")}] non-existent element')
     except selenium.common.exceptions.TimeoutException:
-        if parse.verb:
+        if parse.verbose:
             print(f'[{color_text("yellow", "-")}] timed out to get the profile image')
         else:
             print(f'[{color_text("yellow", "-")}] time limit exceeded')
@@ -349,7 +351,7 @@ def extra_data(parse, brw: Firefox, user: str):
         print(f'[{color_text("yellow", "-")}] non-existent element')
         followers = None
     except selenium.common.exceptions.TimeoutException:
-        if parse.verb:
+        if parse.verbose:
             print(f'[{color_text("yellow", "-")}] timed out to get the followers')
         else:
             print(f'[{color_text("yellow", "-")}] time limit exceeded')
@@ -364,7 +366,7 @@ def extra_data(parse, brw: Firefox, user: str):
         print(f'[{color_text("yellow", "-")}] non-existent element')
         friends = None
     except selenium.common.exceptions.TimeoutException:
-        if parse.verb:
+        if parse.verbose:
             print(f'[{color_text("yellow", "-")}] timed out to get the friends')
         else:
             print(f'[{color_text("yellow", "-")}] time limit exceeded')
@@ -380,7 +382,7 @@ def extra_data(parse, brw: Firefox, user: str):
 
     if parse.txt:
         _file_name = rf"extraData-{user}-{str(datetime.datetime.now())[:16]}.txt"
-        if parse.comp:
+        if parse.compact:
             _file_name = f"extraData-{user}.txt"
         with open(_file_name, "w+") as extra:
             extra.write(followers)
@@ -408,17 +410,17 @@ def scrape(parse, brw: Firefox, items: list):
         print(f'[{color_text("white", "*")}] Coming in {manager.get_url() + usrs}')
 
         # here modifies the branch list to iterate only the parameter items --specify
-        if parse.index:
+        if parse.specify:
             temp_branch = []
-            for index in parse.index:
+            for index in parse.specify:
                 temp_branch.append(branch[index])
-                if parse.verb:
+                if parse.verbose:
                     print(f'[{color_text("green", "+")}] branch {index} added to url')
             branch = temp_branch
 
         # search for extra data
         if parse.several:
-            if parse.verb:
+            if parse.verbose:
                 print(f'[{color_text("blue", "+")}] getting extra data...')
             extra_data(parse, brw, usrs)
 
@@ -430,7 +432,7 @@ def scrape(parse, brw: Firefox, items: list):
                 print(f'[{color_text("red", "-")}] class f7vcsfb0 did not return')
                 print(color_text("yellow", f"error details:\n{error}"))
             else:
-                if parse.verb:
+                if parse.verbose:
                     print(f'[{color_text("blue", "+")}] Collecting data from: div.f7vcsfb0')
                 else:
                     print(f'[{color_text("blue", "+")}] collecting data ...')
@@ -457,7 +459,7 @@ def scrape(parse, brw: Firefox, items: list):
 
                 # search for extra data
                 if parse.several:
-                    if parse.verb:
+                    if parse.verbose:
                         print(f'[{color_text("blue", "+")}] getting extra data...')
                     extra_data(parse, brw, memb)
 
@@ -470,7 +472,7 @@ def scrape(parse, brw: Firefox, items: list):
                         print(f'[{color_text("red", "-")}] class f7vcsfb0 did not return')
                         print(color_text("yellow", f"error details:\n{error}"))
                     else:
-                        if parse.verb:
+                        if parse.verbose:
                             print(f'[{color_text("blue", "+")}] Collecting data from: div.f7vcsfb0')
                         else:
                             print(f'[{color_text("blue", "+")}] collecting data ...')
@@ -500,7 +502,7 @@ def login(parse, brw: Firefox):
 
     # custom accounts will only be applied if both fields are not empty
     if parse.email is None or parse.args.pwd is None:
-        if parse.verb:
+        if parse.verbose:
             print(f'[{color_text("white", "*")}] adding fake email: {manager.get_email()}')
             email.send_keys(manager.get_email())
             print(f'[{color_text("white", "*")}] adding password: ...')
@@ -510,7 +512,7 @@ def login(parse, brw: Firefox):
             email.send_keys(manager.get_email())
             pwd.send_keys(b64decode(manager.get_pass()).decode("utf-8"))
     else:
-        if parse.verb:
+        if parse.verbose:
             print(f'adding email: {parse.email}')
             email.send_keys(parse.args.email)
             print('adding password: ...')
@@ -520,7 +522,7 @@ def login(parse, brw: Firefox):
             email.send_keys(parse.email)
             pwd.send_keys(parse.pwd)
     ok.click()
-    if parse.verb:
+    if parse.verbose:
         print(f'[{color_text("green", "+")}] successfully logged in')
 
 
@@ -553,12 +555,12 @@ def main(parse):
 
     configs = {"firefox_profile": _profile, "options": _options}
     if not parse.browser:
-        if parse.verb:
+        if parse.verbose:
             print(f'[{color_text("blue", "*")}] Starting in hidden mode')
         configs["options"].add_argument("--headless")
         configs["options"].add_argument("--start-maximized")
 
-    if parse.verb:
+    if parse.verbose:
         print(f'[{color_text("white", "*")}] Opening browser ...')
     try:
         browser = Firefox(**configs)
@@ -571,10 +573,10 @@ def main(parse):
         browser.delete_all_cookies()
 
         login(parse, browser)
-        if parse.usersnames is None:
+        if parse.username is None:
             scrape(parse, browser, upload_txt_file(parse.txt))
         else:
-            scrape(parse, browser, parse.usersnames)
+            scrape(parse, browser, parse.username)
         browser.quit()
 
 
@@ -586,27 +588,27 @@ if __name__ == '__main__':
     print()
 
     if fs.args.out:  # .txt output creation
-        if fs.args.usersnames is None:
+        if fs.args.username is None:
             for usr in upload_txt_file(txt_file):
                 file_name = rf"{usr}-{str(datetime.datetime.now())[:16]}.txt"
-                if fs.args.comp:
+                if fs.args.compact:
                     file_name = usr + ".txt"
                 with open(file_name, 'a+') as file:
                     for data_list in manager.get_data()[usr]:
                         file.writelines(data_list)
 
         else:
-            for usr2 in fs.args.usersnames:
+            for usr2 in fs.args.username:
                 file_name = rf"{usr2}-{str(datetime.datetime.now())[:16]}.txt"
-                if fs.args.comp:
+                if fs.args.compact:
                     file_name = usr2 + ".txt"
                 with open(file_name, 'a+') as file:
                     for data_list in manager.get_data()[usr2]:
                         file.writelines(data_list)
 
         print(f'[{color_text("green", "+")}] .txt file(s) created')
-        if fs.args.comp:
-            if fs.args.verb:
+        if fs.args.compact:
+            if fs.args.verbose:
                 print(f'[{color_text("white", "*")}] preparing compaction...')
             compact()
 
