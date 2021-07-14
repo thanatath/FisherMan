@@ -30,18 +30,22 @@ class Fisher:
         parser.add_argument('--version', action='version', version=f'%(prog)s {__version__}',
                             help='Shows the current version of the program.')
 
-        exclusive_group.add_argument('-u', '--username', action='append', nargs='+', required=False,
+        exclusive_group.add_argument('-u', '--username', action='store', nargs='+', required=False,
                                      type=str, help='Defines one or more users for the search.')
 
         exclusive_group.add_argument('--use-txt', action='store', required=False, dest='txt', metavar='TXT_FILE',
                                      type=str, nargs=1,
-                                     help='Replaces the USERSNAMES parameter with a user list in a txt.')
+                                     help='Replaces the USERNAME parameter with a user list in a txt.')
+
+        exclusive_group.add_argument("-i", "--id", action="store", nargs="+", required=False, type=str,
+                                     help="Set the profile identification number.")
 
         parser.add_argument('-sf', '--scrape-family', action='store_true', required=False, dest='scrpfm',
                             help='If this parameter is passed, '
                                  'the information from family members will be scraped if available.')
 
-        parser.add_argument("--specify", action="store", nargs="+", required=False, type=int, choices=[0, 1, 2, 3, 4, 5],
+        parser.add_argument("--specify", action="store", nargs="+", required=False, type=int,
+                            choices=[0, 1, 2, 3, 4, 5],
                             help="Use the index number to return a specific part of the page. "
                                  "about: 0, about_contact_and_basic_info: 1, "
                                  "about_family_and_relationships: 2, "
@@ -50,7 +54,7 @@ class Fisher:
                                  "about_places: 5.")
 
         parser.add_argument("-s", "--several", action="store_true", required=False,
-                            help="Returns extra data like profile picture, number of followers and friends."
+                            help="Returns extra data like profile picture, number of followers and friends. "
                                  "Depending on your machine, there may be a delay in executing the code.")
 
         parser.add_argument('-b', '--browser', action='store_true', required=False,
@@ -402,7 +406,7 @@ def extra_data(parse, brw: Firefox, user: str):
         manager.add_extras(user, [followers, friends])
 
 
-def scrape(parse, brw: Firefox, items: list):
+def scrape(parse, brw: Firefox, items: list[str]):
     """
         Extract certain information from the html of an item in the list provided.
 
@@ -416,8 +420,14 @@ def scrape(parse, brw: Firefox, items: list):
     branch = ['/about', '/about_contact_and_basic_info', '/about_family_and_relationships', '/about_details',
               '/about_work_and_education', '/about_places']
     for usrs in items:
+        if usrs.isnumeric():
+            prefix = manager.get_id_prefix()
+            for C, bn in enumerate(branch):
+                branch[C] = bn.replace("/", "&sk=")
+        else:
+            prefix = manager.get_url()
         temp_data = []
-        print(f'[{color_text("white", "*")}] Coming in {manager.get_url() + usrs}')
+        print(f'[{color_text("white", "*")}] Coming in {prefix + usrs}')
 
         # here modifies the branch list to iterate only the parameter items --specify
         if parse.specify:
@@ -435,12 +445,13 @@ def scrape(parse, brw: Firefox, items: list):
             extra_data(parse, brw, usrs)
 
         for bn in branch:
-            brw.get(f'{manager.get_url() + usrs + bn}')
+            brw.get(f'{prefix + usrs + bn}')
             try:
                 output = WebDriverWait(brw, 10).until(ec.presence_of_element_located((By.CLASS_NAME, 'f7vcsfb0')))
             except Exception as error:
                 print(f'[{color_text("red", "-")}] class f7vcsfb0 did not return')
-                print(color_text("yellow", f"error details:\n{error}"))
+                if parse.verbose:
+                    print(color_text("yellow", f"error details:\n{error}"))
             else:
                 if parse.verbose:
                     print(f'[{color_text("blue", "+")}] Collecting data from: div.f7vcsfb0')
@@ -449,7 +460,7 @@ def scrape(parse, brw: Firefox, items: list):
                 temp_data.append(output.text)
 
                 # check to start scrape family members
-                if bn == '/about_family_and_relationships':
+                if "about_family_and_relationships" in bn:
                     members = output.find_elements(By.TAG_NAME, "a")
                     if members and parse.scrpfm:
                         members_list = []
@@ -480,7 +491,8 @@ def scrape(parse, brw: Firefox, items: list):
                                                                                                'f7vcsfb0')))
                     except Exception as error:
                         print(f'[{color_text("red", "-")}] class f7vcsfb0 did not return')
-                        print(color_text("yellow", f"error details:\n{error}"))
+                        if parse.verbose:
+                            print(color_text("yellow", f"error details:\n{error}"))
                     else:
                         if parse.verbose:
                             print(f'[{color_text("blue", "+")}] Collecting data from: div.f7vcsfb0')
@@ -583,10 +595,12 @@ def main(parse):
         browser.delete_all_cookies()
 
         login(parse, browser)
-        if parse.username is None:
+        if parse.txt:
             scrape(parse, browser, upload_txt_file(parse.txt))
-        else:
+        elif parse.username:
             scrape(parse, browser, parse.username)
+        elif parse.id:
+            scrape(parse, browser, parse.id)
         browser.quit()
 
 
