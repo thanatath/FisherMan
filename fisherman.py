@@ -451,6 +451,10 @@ def scrape(parse, brw: Firefox, items: list[str]):
             brw.get(f'{prefix + usrs + bn}')
             try:
                 output = WebDriverWait(brw, 10).until(ec.presence_of_element_located((By.CLASS_NAME, 'f7vcsfb0')))
+
+            except selenium.common.exceptions.TimeoutException:
+                print(f'[{color_text("yellow", "-")}] time limit exceeded')
+
             except Exception as error:
                 print(f'[{color_text("red", "-")}] class f7vcsfb0 did not return')
                 if parse.verbose:
@@ -492,6 +496,10 @@ def scrape(parse, brw: Firefox, items: list[str]):
                     try:
                         output2 = WebDriverWait(brw, 10).until(ec.presence_of_element_located((By.CLASS_NAME,
                                                                                                'f7vcsfb0')))
+
+                    except selenium.common.exceptions.TimeoutException:
+                        print(f'[{color_text("yellow", "-")}] time limit exceeded')
+
                     except Exception as error:
                         print(f'[{color_text("red", "-")}] class f7vcsfb0 did not return')
                         if parse.verbose:
