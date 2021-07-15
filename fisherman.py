@@ -613,6 +613,37 @@ def main(parse):
         browser.quit()
 
 
+def out_file(parse):
+    """
+        Create the .txt output of the -o parameter.
+
+        :param parse: ArgParse instance namespace arguments to change code flow.
+    """
+    if not parse.args.username:
+        for usr in upload_txt_file(txt_file):
+            file_name = rf"{usr}-{str(datetime.datetime.now())[:16]}.txt"
+            if parse.args.compact:
+                file_name = usr + ".txt"
+            with open(file_name, 'a+') as file:
+                for data_list in manager.get_data()[usr]:
+                    file.writelines(data_list)
+
+    else:
+        for usr2 in parse.args.username:
+            file_name = rf"{usr2}-{str(datetime.datetime.now())[:16]}.txt"
+            if parse.args.compact:
+                file_name = usr2 + ".txt"
+            with open(file_name, 'a+') as file:
+                for data_list in manager.get_data()[usr2]:
+                    file.writelines(data_list)
+
+    print(f'[{color_text("green", "+")}] .txt file(s) created')
+    if parse.args.compact:
+        if parse.args.verbose:
+            print(f'[{color_text("white", "*")}] preparing compaction...')
+        compact()
+
+
 if __name__ == '__main__':
     fs = Fisher()
     update()
@@ -621,30 +652,7 @@ if __name__ == '__main__':
     print()
 
     if fs.args.out:  # .txt output creation
-        if fs.args.username is None:
-            for usr in upload_txt_file(txt_file):
-                file_name = rf"{usr}-{str(datetime.datetime.now())[:16]}.txt"
-                if fs.args.compact:
-                    file_name = usr + ".txt"
-                with open(file_name, 'a+') as file:
-                    for data_list in manager.get_data()[usr]:
-                        file.writelines(data_list)
-
-        else:
-            for usr2 in fs.args.username:
-                file_name = rf"{usr2}-{str(datetime.datetime.now())[:16]}.txt"
-                if fs.args.compact:
-                    file_name = usr2 + ".txt"
-                with open(file_name, 'a+') as file:
-                    for data_list in manager.get_data()[usr2]:
-                        file.writelines(data_list)
-
-        print(f'[{color_text("green", "+")}] .txt file(s) created')
-        if fs.args.compact:
-            if fs.args.verbose:
-                print(f'[{color_text("white", "*")}] preparing compaction...')
-            compact()
-
+        out_file(fs.args)
     else:
         print(color_text('green', 'Information found:'))
         print('-' * 60)
