@@ -330,7 +330,10 @@ def extra_data(parse, brw: Firefox, user: str):
         :param brw: Instance of WebDriver.
         :param user: username to search.
     """
-    brw.get(f"{manager.get_url() + user}")
+    if parse.id:
+        brw.get(f"{manager.get_id_prefix() + user}")
+    else:
+        brw.get(f"{manager.get_url() + user}")
 
     _xpath_img = '//*[@id="mount_0_0_qn"]/div/div[1]/div/div[3]/div/div/div[1]/div[1]/div/div/div[1]/div[2]/div/div/' \
                  'div[1]/div/div/div/a/div/svg/g/image'
@@ -470,7 +473,7 @@ def scrape(parse, brw: Firefox, items: list[str]):
 
         # this scope will only be executed if the list of "affluents" is not empty.
         if manager.get_affluent():
-            div = "\n\n\n" + '=' * 70 + "\n\n\n"
+            div = "\n\n\n" + '=' * 60 + "\n\n\n"
             bar = "\n" + "*" * 70 + "\n"
 
             for memb in manager.get_affluent()[usrs]:
@@ -498,10 +501,8 @@ def scrape(parse, brw: Firefox, items: list[str]):
                             print(f'[{color_text("blue", "+")}] Collecting data from: div.f7vcsfb0')
                         else:
                             print(f'[{color_text("blue", "+")}] collecting data ...')
-                        temp_data.append(output2.text + bar)
+                        temp_data.append(output2.text)
 
-            # add a bar to separate between users
-            temp_data.append(div)
         # complete addition of all data
         manager.add_data(usrs, temp_data)
 
