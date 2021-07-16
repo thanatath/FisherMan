@@ -478,7 +478,6 @@ def scrape(parse, brw: Firefox, items: list[str]):
         # this scope will only be executed if the list of "affluents" is not empty.
         if manager.get_affluent():
             div = "\n\n\n" + '=' * 60 + "\n\n\n"
-            bar = "\n" + "*" * 70 + "\n"
 
             for memb in manager.get_affluent()[usrs]:
                 print()
@@ -613,29 +612,20 @@ def main(parse):
         browser.quit()
 
 
-def out_file(parse):
+def out_file(parse, _input: list[str]):
     """
         Create the .txt output of the -o parameter.
 
         :param parse: ArgParse instance namespace arguments to change code flow.
+        :param _input: The list that will be iterated over each line of the file, in this case it is the list of users.
     """
-    if not parse.args.username:
-        for usr in upload_txt_file(txt_file):
-            file_name = rf"{usr}-{str(datetime.datetime.now())[:16]}.txt"
-            if parse.args.compact:
-                file_name = usr + ".txt"
-            with open(file_name, 'a+') as file:
-                for data_list in manager.get_data()[usr]:
-                    file.writelines(data_list)
-
-    else:
-        for usr2 in parse.args.username:
-            file_name = rf"{usr2}-{str(datetime.datetime.now())[:16]}.txt"
-            if parse.args.compact:
-                file_name = usr2 + ".txt"
-            with open(file_name, 'a+') as file:
-                for data_list in manager.get_data()[usr2]:
-                    file.writelines(data_list)
+    for usr in _input:
+        file_name = rf"{usr}-{str(datetime.datetime.now())[:16]}.txt"
+        if parse.args.compact:
+            file_name = usr + ".txt"
+        with open(file_name, 'w+') as file:
+            for data_list in manager.get_data()[usr]:
+                file.writelines(data_list)
 
     print(f'[{color_text("green", "+")}] .txt file(s) created')
     if parse.args.compact:
@@ -648,11 +638,15 @@ if __name__ == '__main__':
     fs = Fisher()
     update()
     main(fs.args)
-    txt_file = fs.args.txt
     print()
 
     if fs.args.out:  # .txt output creation
-        out_file(fs.args)
+        if fs.args.username:
+            out_file(fs.args, fs.args.username)
+        elif fs.args.txt:
+            out_file(fs.args, fs.args.txt)
+        elif fs.args.id:
+            out_file(fs.args, fs.args.id)
     else:
         print(color_text('green', 'Information found:'))
         print('-' * 60)
