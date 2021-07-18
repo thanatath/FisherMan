@@ -79,7 +79,7 @@ class Fisher:
         parser.add_argument('-v', '-d', '--verbose', '--debug', action='store_true', required=False,
                             help='It shows in detail the data search process.')
 
-        print(color_text('blue', name))
+        print(color_text('cyan', name))
         self.args = parser.parse_args()
 
 
