@@ -422,11 +422,10 @@ def scrape(parse, brw: Firefox, items: list[str]):
 
     branch = ['/about', '/about_contact_and_basic_info', '/about_family_and_relationships', '/about_details',
               '/about_work_and_education', '/about_places']
+    branch_id = [bn.replace("/", "&sk=") for bn in branch]
     for usrs in items:
         if usrs.isnumeric():
             prefix = manager.get_id_prefix()
-            for C, bn in enumerate(branch):
-                branch[C] = bn.replace("/", "&sk=")
         else:
             prefix = manager.get_url()
         temp_data = []
@@ -447,7 +446,7 @@ def scrape(parse, brw: Firefox, items: list[str]):
                 print(f'[{color_text("blue", "+")}] getting extra data...')
             extra_data(parse, brw, usrs)
 
-        for bn in branch:
+        for bn in branch if not usrs.isnumeric() else branch_id:
             brw.get(f'{prefix + usrs + bn}')
             try:
                 output = WebDriverWait(brw, 10).until(ec.presence_of_element_located((By.CLASS_NAME, 'f7vcsfb0')))
@@ -490,7 +489,7 @@ def scrape(parse, brw: Firefox, items: list[str]):
                         print(f'[{color_text("blue", "+")}] getting extra data...')
                     extra_data(parse, brw, memb)
 
-                for bn in branch:
+                for bn in branch if not memb.isnumeric() else branch_id:
                     brw.get(f'{memb + bn}')
                     try:
                         output2 = WebDriverWait(brw, 10).until(ec.presence_of_element_located((By.CLASS_NAME,
@@ -580,7 +579,7 @@ def main(parse):
     # arguments
     _options.add_argument('--disable-blink-features=AutomationControlled')
     _options.add_argument("--disable-extensions")
-    _options.add_argument('--profile-directory=Default')
+    # _options.add_argument('--profile-directory=Default')
     _options.add_argument("--disable-plugins-discovery")
 
     configs = {"firefox_profile": _profile, "options": _options}
