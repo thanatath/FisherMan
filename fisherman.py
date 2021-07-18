@@ -338,6 +338,9 @@ def extra_data(parse, brw: Firefox, user: str):
     _xpath_img = '//*[@id="mount_0_0_qn"]/div/div[1]/div/div[3]/div/div/div[1]/div[1]/div/div/div[1]/div[2]/div/div/' \
                  'div[1]/div/div/div/a/div/svg/g/image'
 
+    _xpath_bio = '//*[@id="mount_0_0_cY"]/div/div[1]/div/div[3]/div/div/div[1]/div[1]/div/div/div[1]/div[2]/div/div/' \
+                 'div[2]/div/div/div/div[2]/div/div/span'
+
     _xpath_follow = '//*[@id="mount_0_0_qn"]/div/div[1]/div/div[3]/div/div/div[1]/div[1]/div/div/div[4]/div[1]/div/' \
                     'div/div/div/div/div/div/div[1]/div[2]/div/div[2]/span/span/a'
 
@@ -360,6 +363,21 @@ def extra_data(parse, brw: Firefox, user: str):
             print(f'[{color_text("red", "-")}] ERROR 403: Forbidden. Unable to download profile picture')
         else:
             print(f'[{color_text("green", "+")}] downloaded profile picture')
+
+    # bio collection
+    try:
+        WebDriverWait(brw, 10).until(ec.visibility_of_element_located((By.XPATH, _xpath_bio)))
+    except selenium.common.exceptions.NoSuchElementException:
+        print(f'[{color_text("yellow", "-")}] non-existent element')
+        bio = None
+    except selenium.common.exceptions.TimeoutException:
+        if parse.verbose:
+            print(f'[{color_text("yellow", "-")}] timed out to get the followers')
+        else:
+            print(f'[{color_text("yellow", "-")}] time limit exceeded')
+        bio = None
+    else:
+        bio = brw.find_element_by_xpath(_xpath_follow).text
 
     # follower collection
     try:
@@ -405,8 +423,8 @@ def extra_data(parse, brw: Firefox, user: str):
             extra.write(followers)
             extra.write(friends)
     else:
-        # in the future to add more data variables, put in the list
-        manager.add_extras(user, [followers, friends])
+        # in the future to add more data variables, put in the dict
+        manager.add_extras(user, {"bio": bio, "followers": followers, "friends": friends})
 
 
 def scrape(parse, brw: Firefox, items: list[str]):
