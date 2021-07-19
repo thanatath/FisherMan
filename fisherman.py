@@ -256,7 +256,7 @@ class Manager:
         """
         return self.__extras__.keys(), self.__affluent__.keys(), self.__data__.keys()
 
-    def get_all_items(self):
+    def get_all_values(self):
         """
             Return all items from all dictionaries.
 
@@ -267,7 +267,7 @@ class Manager:
             For an individual:
             data = self.get_all_items()[1]
         """
-        return self.__extras__.items(), self.__affluent__.items(), self.__data__.items()
+        return self.__extras__.values(), self.__affluent__.values(), self.__data__.values()
 
 
 def update():
@@ -335,21 +335,21 @@ def extra_data(parse, brw: Firefox, user: str):
     else:
         brw.get(f"{manager.get_url() + user}")
 
-    _xpath_img = '//*[@id="mount_0_0_qn"]/div/div[1]/div/div[3]/div/div/div[1]/div[1]/div/div/div[1]/div[2]/div/div/' \
-                 'div[1]/div/div/div/a/div/svg/g/image'
+    bio = None
+    followers = None
+    friends = None
 
-    _xpath_bio = '//*[@id="mount_0_0_cY"]/div/div[1]/div/div[3]/div/div/div[1]/div[1]/div/div/div[1]/div[2]/div/div/' \
-                 'div[2]/div/div/div/div[2]/div/div/span'
+    _xpath_img = '/html/body/div[1]/div/div[1]/div/div[3]/div/div/div[2]/div[1]/div/div/div[1]/div[2]/div/div/div[1]/div/div/div/a/div/svg/g/image'
 
-    _xpath_follow = '//*[@id="mount_0_0_qn"]/div/div[1]/div/div[3]/div/div/div[1]/div[1]/div/div/div[4]/div[1]/div/' \
-                    'div/div/div/div/div/div/div[1]/div[2]/div/div[2]/span/span/a'
+    _xpath_bio = '/html/body/div[1]/div/div[1]/div/div[3]/div/div/div[2]/div[1]/div/div/div[1]/div[2]/div/div/div[2]/div/div/div/div[2]/div/div/span/span'
 
-    _xpath_friend = '/html/body/div[1]/div/div[1]/div/div[3]/div/div/div[1]/div[1]/div/div/div[3]/div/div/div/div[1]' \
-                    '/div/div/div[1]/div/div/div/div/div/div/a[3]/div[1]/span'
+    _xpath_follow = '/html/body/div[1]/div/div[1]/div/div[3]/div/div/div[2]/div[1]/div[4]/div[2]/div/div[1]/div[2]/div[1]/div/div/div/div[2]/div[3]/div/div/div/div[2]/div/div/span/span'
+
+    _xpath_friend = '/html/body/div[1]/div/div[1]/div/div[3]/div/div/div[2]/div[1]/div/div/div[3]/div/div/div/div[1]/div/div/div[1]/div/div/div/div/div/div/a[3]/div[1]/span/span[2]'
 
     # profile image collection
     try:
-        img = WebDriverWait(brw, 10).until(ec.visibility_of_element_located((By.XPATH, _xpath_img)))
+        img = WebDriverWait(brw, 10).until(ec.presence_of_element_located((By.XPATH, _xpath_img)))
     except selenium.common.exceptions.NoSuchElementException:
         print(f'[{color_text("yellow", "-")}] non-existent element')
     except selenium.common.exceptions.TimeoutException:
@@ -366,54 +366,47 @@ def extra_data(parse, brw: Firefox, user: str):
 
     # bio collection
     try:
-        WebDriverWait(brw, 10).until(ec.visibility_of_element_located((By.XPATH, _xpath_bio)))
+        WebDriverWait(brw, 10).until(ec.presence_of_element_located((By.XPATH, _xpath_bio)))
     except selenium.common.exceptions.NoSuchElementException:
         print(f'[{color_text("yellow", "-")}] non-existent element')
-        bio = None
     except selenium.common.exceptions.TimeoutException:
         if parse.verbose:
             print(f'[{color_text("yellow", "-")}] timed out to get the followers')
         else:
             print(f'[{color_text("yellow", "-")}] time limit exceeded')
-        bio = None
     else:
-        bio = brw.find_element_by_xpath(_xpath_follow).text
+        bio = brw.find_element_by_xpath(_xpath_bio).text
 
     # follower collection
     try:
-        WebDriverWait(brw, 10).until(ec.visibility_of_element_located((By.XPATH, _xpath_follow)))
+        WebDriverWait(brw, 10).until(ec.presence_of_element_located((By.XPATH, _xpath_follow)))
     except selenium.common.exceptions.NoSuchElementException:
         print(f'[{color_text("yellow", "-")}] non-existent element')
-        followers = None
     except selenium.common.exceptions.TimeoutException:
         if parse.verbose:
             print(f'[{color_text("yellow", "-")}] timed out to get the followers')
         else:
             print(f'[{color_text("yellow", "-")}] time limit exceeded')
-        followers = None
     else:
         followers = brw.find_element_by_xpath(_xpath_follow).text
 
     # friends collection
     try:
-        WebDriverWait(brw, 10).until(ec.visibility_of_element_located((By.XPATH, _xpath_friend)))
+        WebDriverWait(brw, 10).until(ec.presence_of_element_located((By.XPATH, _xpath_friend)))
     except selenium.common.exceptions.NoSuchElementException:
         print(f'[{color_text("yellow", "-")}] non-existent element')
-        friends = None
+
     except selenium.common.exceptions.TimeoutException:
         if parse.verbose:
             print(f'[{color_text("yellow", "-")}] timed out to get the friends')
         else:
             print(f'[{color_text("yellow", "-")}] time limit exceeded')
-        friends = None
     else:
         # the return is a string containing both the word "friends" and the number of friends
         # this IF is to not only return the pure word
-        temp = brw.find_element_by_xpath(_xpath_friend).text
-        if len(temp) > 6 and len(temp) > 7:
-            friends = temp
-        else:
-            friends = None
+        output = brw.find_element_by_xpath(_xpath_friend).text
+        if len(output) > 6 and len(output) > 7:
+            friends = brw.find_element_by_xpath(_xpath_friend).text
 
     if parse.txt:
         _file_name = rf"extraData-{user}-{str(datetime.datetime.now())[:16]}.txt"
@@ -675,5 +668,5 @@ if __name__ == '__main__':
 
             if fs.args.several:
                 print("EXTRAS:")
-                for data_extra in manager.get_extras()[profile]:
-                    print(data_extra)
+                for data_extra in manager.get_extras()[profile].items():
+                    print(f"{data_extra[0]:10}: {data_extra[1]}")
