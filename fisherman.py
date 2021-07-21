@@ -319,6 +319,16 @@ def compact():
     print(f'[{color_text("green", "+")}] successful compression')
 
 
+def check_connection():
+    """
+        Check if the internet connection.
+    """
+    try:
+        get("https://google.com")
+    except requests.exceptions.ConnectionError:
+        raise Exception("There is no internet connection.")
+
+
 manager = Manager()
 
 
@@ -639,6 +649,7 @@ def out_file(parse, _input: list[str]):
 
 
 if __name__ == '__main__':
+    check_connection()
     fs = Fisher()
     update()
     main(fs.args)
