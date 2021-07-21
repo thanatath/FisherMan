@@ -5,9 +5,9 @@ from argparse import ArgumentParser
 from base64 import b64decode
 from os import path, walk, remove, getcwd
 from re import findall
-from subprocess import getoutput
 from zipfile import ZipFile, ZIP_DEFLATED
 
+import requests.exceptions
 import selenium.common.exceptions
 from requests import get
 from selenium.webdriver import Firefox, FirefoxOptions, FirefoxProfile
@@ -19,7 +19,7 @@ from src.form_text import color_text
 from src.logo import name
 
 module_name = 'FisherMan: Extract information from facebook profiles.'
-__version__ = "3.2.0"
+__version__ = "3.3.0"
 
 
 class Fisher:
@@ -33,12 +33,12 @@ class Fisher:
         exclusive_group.add_argument('-u', '--username', action='store', nargs='+', required=False,
                                      type=str, help='Defines one or more users for the search.')
 
+        exclusive_group.add_argument("-i", "--id", action="store", nargs="+", required=False, type=str,
+                                     help="Set the profile identification number.")
+
         exclusive_group.add_argument('--use-txt', action='store', required=False, dest='txt', metavar='TXT_FILE',
                                      type=str, nargs=1,
                                      help='Replaces the USERNAME parameter with a user list in a txt.')
-
-        exclusive_group.add_argument("-i", "--id", action="store", nargs="+", required=False, type=str,
-                                     help="Set the profile identification number.")
 
         parser.add_argument('-sf', '--scrape-family', action='store_true', required=False, dest='scrpfm',
                             help='If this parameter is passed, '
@@ -339,17 +339,10 @@ def extra_data(parse, brw: Firefox, user: str):
     followers = None
     friends = None
 
-    _xpath_img = '/html/body/div[1]/div/div[1]/div/div[3]/div/div/div[2]/div[1]/div/div/div[1]/div[2]/div/div/div[1]/div/div/div/a/div/svg/g/image'
-
-    _xpath_bio = '/html/body/div[1]/div/div[1]/div/div[3]/div/div/div[2]/div[1]/div/div/div[1]/div[2]/div/div/div[2]/div/div/div/div[2]/div/div/span/span'
-
-    _xpath_follow = '/html/body/div[1]/div/div[1]/div/div[3]/div/div/div[2]/div[1]/div[4]/div[2]/div/div[1]/div[2]/div[1]/div/div/div/div[2]/div[3]/div/div/div/div[2]/div/div/span/span'
-
-    _xpath_friend = '/html/body/div[1]/div/div[1]/div/div[3]/div/div/div[2]/div[1]/div/div/div[3]/div/div/div/div[1]/div/div/div[1]/div/div/div/div/div/div/a[3]/div[1]/span/span[2]'
-
     # profile image collection
+    wbw = WebDriverWait(brw, 10)
     try:
-        img = WebDriverWait(brw, 10).until(ec.presence_of_element_located((By.XPATH, _xpath_img)))
+        wbw.until(ec.element_to_be_clickable((By.CSS_SELECTOR, "div[class*='ecm0bbzt'] a")))
     except selenium.common.exceptions.NoSuchElementException:
         print(f'[{color_text("yellow", "-")}] non-existent element')
     except selenium.common.exceptions.TimeoutException:
@@ -358,15 +351,12 @@ def extra_data(parse, brw: Firefox, user: str):
         else:
             print(f'[{color_text("yellow", "-")}] time limit exceeded')
     else:
-        out = getoutput(f"wget {img}")
-        if "403: Forbidden" in out:
-            print(f'[{color_text("red", "-")}] ERROR 403: Forbidden. Unable to download profile picture')
-        else:
-            print(f'[{color_text("green", "+")}] downloaded profile picture')
+        brw.find_element_by_css_selector("div[class*='ecm0bbzt'] a").screenshot(f"profile_picture-{user}.png")
+        print(f'[{color_text("green", "+")}] picture saved')
 
     # bio collection
     try:
-        WebDriverWait(brw, 10).until(ec.presence_of_element_located((By.XPATH, _xpath_bio)))
+        wbw.until(ec.visibility_of_element_located((By.CSS_SELECTOR, "span[class*=g1cxx5fr] > span")))
     except selenium.common.exceptions.NoSuchElementException:
         print(f'[{color_text("yellow", "-")}] non-existent element')
     except selenium.common.exceptions.TimeoutException:
@@ -375,11 +365,11 @@ def extra_data(parse, brw: Firefox, user: str):
         else:
             print(f'[{color_text("yellow", "-")}] time limit exceeded')
     else:
-        bio = brw.find_element_by_xpath(_xpath_bio).text
+        bio = brw.find_element_by_css_selector("span[class*=g1cxx5fr] > span").text
 
     # follower collection
     try:
-        WebDriverWait(brw, 10).until(ec.presence_of_element_located((By.XPATH, _xpath_follow)))
+        wbw.until(ec.visibility_of_element_located((By.CSS_SELECTOR, "a[class*='nc684nl6']")))
     except selenium.common.exceptions.NoSuchElementException:
         print(f'[{color_text("yellow", "-")}] non-existent element')
     except selenium.common.exceptions.TimeoutException:
@@ -388,11 +378,13 @@ def extra_data(parse, brw: Firefox, user: str):
         else:
             print(f'[{color_text("yellow", "-")}] time limit exceeded')
     else:
-        followers = brw.find_element_by_xpath(_xpath_follow).text
+        element = str(brw.find_element_by_css_selector("a[class*='nc684nl6']").text).split()[0]
+        if element.isnumeric():
+            followers = element
 
     # friends collection
     try:
-        WebDriverWait(brw, 10).until(ec.presence_of_element_located((By.XPATH, _xpath_friend)))
+        wbw.until(ec.visibility_of_element_located((By.CSS_SELECTOR, "span[class*='lrazzd5p']")))
     except selenium.common.exceptions.NoSuchElementException:
         print(f'[{color_text("yellow", "-")}] non-existent element')
 
@@ -404,9 +396,9 @@ def extra_data(parse, brw: Firefox, user: str):
     else:
         # the return is a string containing both the word "friends" and the number of friends
         # this IF is to not only return the pure word
-        output = brw.find_element_by_xpath(_xpath_friend).text
-        if len(output) > 6 and len(output) > 7:
-            friends = brw.find_element_by_xpath(_xpath_friend).text
+        element = brw.find_element_by_css_selector("span[class*='lrazzd5p']").find_elements_by_tag_name("span")[1].text
+        if element.isnumeric():
+            friends = element
 
     if parse.txt:
         _file_name = rf"extraData-{user}-{str(datetime.datetime.now())[:16]}.txt"
@@ -417,7 +409,7 @@ def extra_data(parse, brw: Firefox, user: str):
             extra.write(friends)
     else:
         # in the future to add more data variables, put in the dict
-        manager.add_extras(user, {"bio": bio, "followers": followers, "friends": friends})
+        manager.add_extras(user, {"Bio": bio, "Followers": followers, "Friends": friends})
 
 
 def scrape(parse, brw: Firefox, items: list[str]):
@@ -434,6 +426,7 @@ def scrape(parse, brw: Firefox, items: list[str]):
     branch = ['/about', '/about_contact_and_basic_info', '/about_family_and_relationships', '/about_details',
               '/about_work_and_education', '/about_places']
     branch_id = [bn.replace("/", "&sk=") for bn in branch]
+    wbw = WebDriverWait(brw, 10)
     for usrs in items:
         if usrs.isnumeric():
             prefix = manager.get_id_prefix()
@@ -460,7 +453,7 @@ def scrape(parse, brw: Firefox, items: list[str]):
         for bn in branch if not usrs.isnumeric() else branch_id:
             brw.get(f'{prefix + usrs + bn}')
             try:
-                output = WebDriverWait(brw, 10).until(ec.presence_of_element_located((By.CLASS_NAME, 'f7vcsfb0')))
+                output = wbw.until(ec.presence_of_element_located((By.CLASS_NAME, 'f7vcsfb0')))
 
             except selenium.common.exceptions.TimeoutException:
                 print(f'[{color_text("yellow", "-")}] time limit exceeded')
@@ -503,8 +496,8 @@ def scrape(parse, brw: Firefox, items: list[str]):
                 for bn in branch if not memb.isnumeric() else branch_id:
                     brw.get(f'{memb + bn}')
                     try:
-                        output2 = WebDriverWait(brw, 10).until(ec.presence_of_element_located((By.CLASS_NAME,
-                                                                                               'f7vcsfb0')))
+                        output2 = wbw.until(ec.presence_of_element_located((By.CLASS_NAME,
+                                                                            'f7vcsfb0')))
 
                     except selenium.common.exceptions.TimeoutException:
                         print(f'[{color_text("yellow", "-")}] time limit exceeded')
@@ -532,10 +525,11 @@ def login(parse, brw: Firefox):
         :param brw: Instance of WebDriver.
     """
     brw.get(manager.get_url())
+    wbw = WebDriverWait(brw, 10)
 
-    email = WebDriverWait(brw, 10).until(ec.element_to_be_clickable((By.NAME, "email")))
-    pwd = WebDriverWait(brw, 10).until(ec.element_to_be_clickable((By.NAME, "pass")))
-    ok = WebDriverWait(brw, 10).until(ec.element_to_be_clickable((By.NAME, "login")))
+    email = wbw.until(ec.element_to_be_clickable((By.NAME, "email")))
+    pwd = wbw.until(ec.element_to_be_clickable((By.NAME, "pass")))
+    ok = wbw.until(ec.element_to_be_clickable((By.NAME, "login")))
 
     email.clear()
     pwd.clear()
