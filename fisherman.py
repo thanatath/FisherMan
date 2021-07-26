@@ -5,11 +5,12 @@ from argparse import ArgumentParser
 from base64 import b64decode
 from os import path, walk, remove, getcwd
 from re import findall
+from typing import Callable
 from zipfile import ZipFile, ZIP_DEFLATED
 
+import requests
 import requests.exceptions
 import selenium.common.exceptions
-from requests import get
 from selenium.webdriver import Firefox, FirefoxOptions, FirefoxProfile
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as ec
@@ -17,9 +18,10 @@ from selenium.webdriver.support.ui import WebDriverWait
 
 from src.form_text import color_text
 from src.logo import name
+from src.manager import Manager
 
 module_name = 'FisherMan: Extract information from facebook profiles.'
-__version__ = "3.3.0"
+__version__ = "3.2.1"
 
 
 class Fisher:
@@ -83,196 +85,9 @@ class Fisher:
         self.args = parser.parse_args()
 
 
-class Manager:
-    def __init__(self):
-        self.__url__ = 'https://facebook.com/'
-        self.__id_url_prefix__ = "https://www.facebook.com/profile.php?id="
-        self.__prefix_url_search__ = "https://www.facebook.com/search/people/?q="  # coming soon...
-        self.__fake_email__ = 'submarino.sub.aquatico@outlook.com'
-        self.__password__ = 'MDBjbGVwdG9tYW5pYWNvMDA='
-        self.__data__ = {}
-        self.__affluent__ = {}
-        self.__extras__ = {}
-
-    def clean_all(self):
-        """
-            Clear all data.
-        """
-        self.__data__.clear()
-        self.__affluent__.clear()
-        self.__extras__.clear()
-
-    def clean_data(self):
-        """
-            Clear dict data.
-        """
-        self.__data__.clear()
-
-    def clean_affluent(self):
-        """
-            Clear affluent data.
-        """
-        self.__affluent__.clear()
-
-    def clean_extras(self):
-        """
-            Clear extras data.
-        """
-        self.__extras__.clear()
-
-    def set_email(self, string: str):
-        """
-            Defines the default email to use.
-
-            :param string: Email.
-        """
-        self.__fake_email__ = string
-
-    def set_pass(self, string: str):
-        """
-            Defines the default password to use.
-
-            :param string: Password.
-        """
-        self.__password__ = string
-
-    def set_data(self, dictionary: dict):
-        """
-            Updates the data in __date__ in its entirety.
-
-            :param dictionary: dict to update.
-        """
-        self.__data__ = dictionary
-
-    def set_affluent(self, dictionary: dict):
-        """
-            Updates the data in __affluent__ in its entirety.
-
-            :param dictionary: dict to update.
-        """
-        self.__affluent__ = dictionary
-
-    def set_extras(self, dictionary: dict):
-        """
-            Updates the data in __extras__ in its entirety.
-
-            :param dictionary: dict to update.
-        """
-        self.__extras__ = dictionary
-
-    def add_data(self, key, item):
-        """
-            Add a data in __date__ with an identifying key.
-
-            :param key: identification key.
-            :param item: data to be assigned to key.
-        """
-        self.__data__[key] = item
-
-    def add_affluent(self, key, item):
-        """
-            Add a data in __affluent__ with an identifying key.
-
-            :param key: identification key.
-            :param item: data to be assigned to key.
-        """
-        self.__affluent__[key] = item
-
-    def add_extras(self, key, item):
-        """
-            Add a data in __extras__ with an identifying key.
-
-            :param key: identification key.
-            :param item: data to be assigned to key.
-        """
-        self.__extras__[key] = item
-
-    def get_url(self):
-        """
-            Returns default class page.
-
-            :return: default page.
-        """
-        return self.__url__
-
-    def get_id_prefix(self):
-        """
-            Returns user id link prefix.
-
-            :return: link prefix
-        """
-        return self.__id_url_prefix__
-
-    def get_email(self):
-        """
-            Returns default class email.
-
-            :return: default email.
-        """
-        return self.__fake_email__
-
-    def get_pass(self):
-        """
-            Returns default class password.
-
-            :return: default password.
-        """
-        return self.__password__
-
-    def get_data(self):
-        """
-            Returns all datas.
-
-            :return: __data__.
-        """
-        return self.__data__
-
-    def get_affluent(self):
-        """
-            Returns all affluents.
-
-            :return: __affluent__.
-        """
-        return self.__affluent__
-
-    def get_extras(self):
-        """
-            Returns all extras.
-
-            :return: __extras__.
-        """
-        return self.__extras__
-
-    def get_all_keys(self):
-        """
-            Return all keys from all dictionaries.
-
-            extras, affluent, data
-            To get all returns:
-            datas = self.get_all_keys()
-
-            For an individual:
-            data = self.get_all_keys()[1]
-        """
-        return self.__extras__.keys(), self.__affluent__.keys(), self.__data__.keys()
-
-    def get_all_values(self):
-        """
-            Return all items from all dictionaries.
-
-            extras, affluent, data
-            To get all returns:
-            datas = self.get_all_items()
-
-            For an individual:
-            data = self.get_all_items()[1]
-        """
-        return self.__extras__.values(), self.__affluent__.values(), self.__data__.values()
-
-
 def update():
     try:
-        r = get("https://raw.githubusercontent.com/Godofcoffe/FisherMan/main/fisherman.py")
+        r = requests.get("https://raw.githubusercontent.com/Godofcoffe/FisherMan/main/fisherman.py")
 
         remote_version = str(findall('__version__ = "(.*)"', r.text)[0])
         local_version = __version__
@@ -321,15 +136,12 @@ def compact():
 
 def check_connection():
     """
-        Check if the internet connection.
+        Check the internet connection.
     """
     try:
-        get("https://google.com")
+        requests.get("https://google.com")
     except requests.exceptions.ConnectionError:
         raise Exception("There is no internet connection.")
-
-
-manager = Manager()
 
 
 def extra_data(parse, brw: Firefox, user: str):
@@ -351,72 +163,42 @@ def extra_data(parse, brw: Firefox, user: str):
 
     # profile image collection
     wbw = WebDriverWait(brw, 10)
-    try:
-        wbw.until(ec.element_to_be_clickable((By.CSS_SELECTOR, "div[class*='ecm0bbzt'] a")))
-    except selenium.common.exceptions.NoSuchElementException:
-        print(f'[{color_text("yellow", "-")}] non-existent element')
-    except selenium.common.exceptions.TimeoutException:
-        if parse.verbose:
-            print(f'[{color_text("yellow", "-")}] timed out to get the profile image')
-        else:
-            print(f'[{color_text("yellow", "-")}] time limit exceeded')
-    else:
-        brw.find_element_by_css_selector("div[class*='ecm0bbzt'] a").screenshot(f"profile_picture-{user}.png")
-        print(f'[{color_text("green", "+")}] picture saved')
 
-    # bio collection
-    try:
-        wbw.until(ec.visibility_of_element_located((By.CSS_SELECTOR, "span[class*=g1cxx5fr] > span")))
-    except selenium.common.exceptions.NoSuchElementException:
-        print(f'[{color_text("yellow", "-")}] non-existent element')
-    except selenium.common.exceptions.TimeoutException:
-        if parse.verbose:
-            print(f'[{color_text("yellow", "-")}] timed out to get the followers')
+    def collection(expected: Callable, css_selector: str):
+        try:
+            wbw.until(expected((By.CSS_SELECTOR, css_selector)))
+        except selenium.common.exceptions.NoSuchElementException:
+            print(f'[{color_text("yellow", "-")}] non-existent element')
+        except selenium.common.exceptions.TimeoutException:
+            if parse.verbose:
+                print(f'[{color_text("yellow", "-")}] timed out to get the extra data')
+            else:
+                print(f'[{color_text("yellow", "-")}] time limit exceeded')
         else:
-            print(f'[{color_text("yellow", "-")}] time limit exceeded')
-    else:
-        bio = brw.find_element_by_css_selector("span[class*=g1cxx5fr] > span").text
+            return brw.find_element_by_css_selector(css_selector)
 
-    # follower collection
-    try:
-        wbw.until(ec.visibility_of_element_located((By.CSS_SELECTOR, "a[class*='nc684nl6']")))
-    except selenium.common.exceptions.NoSuchElementException:
-        print(f'[{color_text("yellow", "-")}] non-existent element')
-    except selenium.common.exceptions.TimeoutException:
-        if parse.verbose:
-            print(f'[{color_text("yellow", "-")}] timed out to get the followers')
-        else:
-            print(f'[{color_text("yellow", "-")}] time limit exceeded')
-    else:
-        element = str(brw.find_element_by_css_selector("a[class*='nc684nl6']").text).split()[0]
-        if element.isnumeric():
-            followers = element
+    collection(ec.element_to_be_clickable, "div[class*='ecm0bbzt'] a").screenshot(f"profile_picture-{user}.png")
+    print(f'[{color_text("green", "+")}] picture saved')
 
-    # friends collection
-    try:
-        wbw.until(ec.visibility_of_element_located((By.CSS_SELECTOR, "span[class*='lrazzd5p']")))
-    except selenium.common.exceptions.NoSuchElementException:
-        print(f'[{color_text("yellow", "-")}] non-existent element')
+    bio = collection(ec.visibility_of_element_located, "span[class*=g1cxx5fr] > span").text
 
-    except selenium.common.exceptions.TimeoutException:
-        if parse.verbose:
-            print(f'[{color_text("yellow", "-")}] timed out to get the friends')
-        else:
-            print(f'[{color_text("yellow", "-")}] time limit exceeded')
-    else:
-        # the return is a string containing both the word "friends" and the number of friends
-        # this IF is to not only return the pure word
-        element = brw.find_element_by_css_selector("span[class*='lrazzd5p']").find_elements_by_tag_name("span")[1].text
-        if element.isnumeric():
-            friends = element
+    element = str(collection(ec.visibility_of_element_located, "a[class*='nc684nl6']").text).split()[0]
+    if element.isnumeric():
+        followers = element
+
+    element = collection(ec.visibility_of_element_located,
+                         "span[class*='lrazzd5p']").find_elements_by_tag_name("span")[1].text
+    if element.isnumeric():
+        friends = element
 
     if parse.txt:
         _file_name = rf"extraData-{user}-{str(datetime.datetime.now())[:16]}.txt"
         if parse.compact:
             _file_name = f"extraData-{user}.txt"
         with open(_file_name, "w+") as extra:
-            extra.write(followers)
-            extra.write(friends)
+            extra.write(f"Bio: {bio}")
+            extra.write(f"Followers: {followers}")
+            extra.write(f"Friends: {friends}")
     else:
         # in the future to add more data variables, put in the dict
         manager.add_extras(user, {"Bio": bio, "Followers": followers, "Friends": friends})
@@ -570,13 +352,11 @@ def login(parse, brw: Firefox):
         print(f'[{color_text("green", "+")}] successfully logged in')
 
 
-def main(parse):
+def init(parse):
     """
-        Main function.
+        Start the webdriver.
 
         :param parse: ArgParse instance namespace arguments to change code flow.
-
-        Where the other functions and flow decisions are executed.
     """
 
     # browser settings
@@ -607,23 +387,15 @@ def main(parse):
     if parse.verbose:
         print(f'[{color_text("white", "*")}] Opening browser ...')
     try:
-        browser = Firefox(**configs)
+        engine = Firefox(**configs)
     except Exception as error:
         print(color_text("red",
                          f'The executable "geckodriver" was not found or the browser "Firefox" is not installed.'))
         print(color_text("yellow", f"error details:\n{error}"))
     else:
         # others arguments
-        browser.delete_all_cookies()
-
-        login(parse, browser)
-        if parse.txt:
-            scrape(parse, browser, upload_txt_file(parse.txt))
-        elif parse.username:
-            scrape(parse, browser, parse.username)
-        elif parse.id:
-            scrape(parse, browser, parse.id)
-        browser.quit()
+        engine.delete_all_cookies()
+        return engine
 
 
 def out_file(parse, _input: list[str]):
@@ -651,17 +423,27 @@ def out_file(parse, _input: list[str]):
 if __name__ == '__main__':
     check_connection()
     fs = Fisher()
+    manager = Manager()
+    ARGS = fs.args
     update()
-    main(fs.args)
+    browser = init(ARGS)
+    login(ARGS, browser)
+    if ARGS.txt:
+        scrape(ARGS, browser, upload_txt_file(ARGS.txt))
+    elif ARGS.username:
+        scrape(ARGS, browser, ARGS.username)
+    elif ARGS.id:
+        scrape(ARGS, browser, ARGS.id)
+    browser.quit()
     print()
 
-    if fs.args.out:  # .txt output creation
-        if fs.args.username:
-            out_file(fs.args, fs.args.username)
-        elif fs.args.txt:
-            out_file(fs.args, fs.args.txt)
-        elif fs.args.id:
-            out_file(fs.args, fs.args.id)
+    if ARGS.out:  # .txt output creation
+        if ARGS.username:
+            out_file(ARGS, ARGS.username)
+        elif ARGS.txt:
+            out_file(ARGS, ARGS.txt)
+        elif ARGS.id:
+            out_file(ARGS, ARGS.id)
     else:
         print(color_text('green', 'Information found:'))
         print('-' * 60)
@@ -671,7 +453,7 @@ if __name__ == '__main__':
                 print()
                 print('-' * 60)
 
-            if fs.args.several:
+            if ARGS.several:
                 print("EXTRAS:")
                 for data_extra in manager.get_extras()[profile].items():
                     print(f"{data_extra[0]:10}: {data_extra[1]}")
