@@ -18,7 +18,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 
 from src.form_text import color_text
 from src.logo import name
-from src.manager import Manager
+from src.manager import Manager, Xpaths
 
 module_name = 'FisherMan: Extract information from facebook profiles.'
 __version__ = "3.2.1"
@@ -117,7 +117,7 @@ def upload_txt_file(name_file: str):
         else:
             return users_txt
     else:
-        color_text("red", "INVALID FILE!")
+        raise Exception(color_text("red", "INVALID FILE!"))
 
 
 def compact():
@@ -157,38 +157,43 @@ def extra_data(parse, brw: Firefox, user: str):
     else:
         brw.get(f"{manager.get_url() + user}")
 
-    bio = None
     followers = None
     friends = None
 
-    # profile image collection
     wbw = WebDriverWait(brw, 10)
+    xpaths = Xpaths()
 
-    def collection(expected: Callable, css_selector: str):
+    def collection_by_xpath(expected: Callable, xpath: str):
         try:
-            wbw.until(expected((By.CSS_SELECTOR, css_selector)))
+            wbw.until(expected((By.XPATH, xpath)))
         except selenium.common.exceptions.NoSuchElementException:
-            print(f'[{color_text("yellow", "-")}] non-existent element')
+            print(f'[{color_text("red", "-")}] non-existent element')
         except selenium.common.exceptions.TimeoutException:
             if parse.verbose:
                 print(f'[{color_text("yellow", "-")}] timed out to get the extra data')
             else:
                 print(f'[{color_text("yellow", "-")}] time limit exceeded')
         else:
-            return brw.find_element_by_css_selector(css_selector)
+            return brw.find_element_by_xpath(xpath)
 
-    collection(ec.element_to_be_clickable, "div[class*='ecm0bbzt'] a").screenshot(f"profile_picture-{user}.png")
+    img = collection_by_xpath(ec.element_to_be_clickable, xpaths.picture)
+    img.screenshot(f"{user}_profile_picture.png")
     print(f'[{color_text("green", "+")}] picture saved')
 
-    bio = collection(ec.visibility_of_element_located, "span[class*=g1cxx5fr] > span").text
+    element = collection_by_xpath(ec.visibility_of_element_located, xpaths.bio).text
+    if element:
+        bio = element
+    else:
+        bio = None
 
-    element = str(collection(ec.visibility_of_element_located, "a[class*='nc684nl6']").text).split()[0]
-    if element.isnumeric():
-        followers = element
+    followers = str(collection_by_xpath(ec.visibility_of_element_located, xpaths.followers).text).split()[0]
 
-    element = collection(ec.visibility_of_element_located,
-                         "span[class*='lrazzd5p']").find_elements_by_tag_name("span")[1].text
-    if element.isnumeric():
+    try:
+        element = collection_by_xpath(ec.visibility_of_element_located, xpaths.friends)
+        element = element.find_elements_by_tag_name("span")[2].text
+    except IndexError:
+        print(f'[{color_text("red", "-")}] There is no number of friends to catch')
+    else:
         friends = element
 
     if parse.txt:
@@ -219,11 +224,27 @@ def scrape(parse, brw: Firefox, items: list[str]):
               '/about_work_and_education', '/about_places']
     branch_id = [bn.replace("/", "&sk=") for bn in branch]
     wbw = WebDriverWait(brw, 10)
-    for usrs in items:
-        if usrs.isnumeric():
-            prefix = manager.get_id_prefix()
+
+    def thin_out(user: str):
+        """
+            Username Refiner.
+
+            :param user: user to be refined.
+
+            This function returns a username that is acceptable for the script to run correctly.
+        """
+
+        if user.isnumeric():
+            if "facebook.com" in user:
+                user = user[user.index("=") + 1:]
+            return manager.get_id_prefix(), user
         else:
-            prefix = manager.get_url()
+            if "facebook.com" in user:
+                user = user[user.index("/", 9) + 1:]
+            return manager.get_url(), user
+
+    for usrs in items:
+        prefix, usrs = thin_out(usrs)
         temp_data = []
         print(f'[{color_text("white", "*")}] Coming in {prefix + usrs}')
 
@@ -429,7 +450,7 @@ if __name__ == '__main__':
     browser = init(ARGS)
     login(ARGS, browser)
     if ARGS.txt:
-        scrape(ARGS, browser, upload_txt_file(ARGS.txt))
+        scrape(ARGS, browser, upload_txt_file(ARGS.txt[0]))
     elif ARGS.username:
         scrape(ARGS, browser, ARGS.username)
     elif ARGS.id:
