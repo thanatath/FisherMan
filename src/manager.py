@@ -1,3 +1,25 @@
+class Xpaths:
+    @property
+    def bio(self):
+        return '/html/body/div[1]/div/div[1]/div/div[3]/div/div/div[1]/div[1]/div/div/div[1]/div[2]/div/div/div[2]/' \
+               'div/div/div/div[2]/div/div/span'
+
+    @property
+    def followers(self):
+        return '/html/body/div[1]/div/div[1]/div/div[3]/div/div/div[1]/div[1]/div/div/div[4]/div[1]/div/div/div/div/' \
+               'div/div/div/div[1]/div[2]/div/div[2]/span/span'
+
+    @property
+    def friends(self):
+        return '/html/body/div[1]/div/div[1]/div/div[3]/div/div/div[1]/div[1]/div/div/div[3]/div/div/div/div[1]/div/' \
+               'div/div[1]/div/div/div/div/div/div/a[3]/div[1]'
+
+    @property
+    def picture(self):
+        return '/html/body/div[1]/div/div[1]/div/div[3]/div/div/div[1]/div[1]/div/div/div[1]/div[2]/div/div/div[1]/' \
+        'div/div/div'
+
+
 class Manager:
     def __init__(self):
         self.__url__ = 'https://facebook.com/'
