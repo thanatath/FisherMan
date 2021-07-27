@@ -29,22 +29,22 @@ $ python3 -m pip install -r requirements.txt
 
 ```
 $ python3 fisherman.py --help
-usage: fisherman.py [-h] [--version] [-u USERNAME [USERNAME ...] | --use-txt
-                    TXT_FILE | -i ID [ID ...]] [-sf]
+usage: fisherman.py [-h] [--version] [-u USERNAME [USERNAME ...] | -i ID
+                    [ID ...] | --use-txt TXT_FILE] [-sf]
                     [--specify {0,1,2,3,4,5} [{0,1,2,3,4,5} ...]] [-s] [-b]
                     [--email EMAIL] [--password PASSWORD] [-o] [-c] [-v]
 
-FisherMan: Extract information from facebook profiles. (Version 3.2.0)
+FisherMan: Extract information from facebook profiles. (Version 3.2.1)
 
 optional arguments:
   -h, --help            show this help message and exit
   --version             Shows the current version of the program.
   -u USERNAME [USERNAME ...], --username USERNAME [USERNAME ...]
                         Defines one or more users for the search.
-  --use-txt TXT_FILE    Replaces the USERNAME parameter with a user list in a
-                        txt.
   -i ID [ID ...], --id ID [ID ...]
                         Set the profile identification number.
+  --use-txt TXT_FILE    Replaces the USERNAME parameter with a user list in a
+                        txt.
   -sf, --scrape-family  If this parameter is passed, the information from
                         family members will be scraped if available.
   --specify {0,1,2,3,4,5} [{0,1,2,3,4,5} ...]
@@ -53,8 +53,7 @@ optional arguments:
                         about_family_and_relationships: 2, about_details: 3,
                         about_work_and_education: 4, about_places: 5.
   -s, --several         Returns extra data like profile picture, number of
-                        followers and friends. Depending on your machine, there
-                        may be a delay in executing the code.
+                        followers and friends.
   -b, --browser         Opens the browser/bot.
   --email EMAIL         If the profile is blocked, you can define your
                         account, however you have the search user in your
@@ -111,7 +110,6 @@ python3 fisherman.py --email youremail@email.com --password yourpass
   ```
   python3 fisherman.py -u name -s
   ```
-  **Warning: This functionality is still a little unstable**
 
 ## *This tool only extracts information that is public, not use for private or illegal purposes.*
 
