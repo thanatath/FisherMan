@@ -8,6 +8,7 @@ from re import findall
 from typing import Callable
 from zipfile import ZipFile, ZIP_DEFLATED
 
+import colorama
 import requests
 import requests.exceptions
 import selenium.common.exceptions
@@ -21,7 +22,7 @@ from src.logo import name
 from src.manager import Manager, Xpaths
 
 module_name = 'FisherMan: Extract information from facebook profiles.'
-__version__ = "3.2.1"
+__version__ = "3.2.2"
 
 
 class Fisher:
@@ -156,7 +157,6 @@ def extra_data(parse, brw: Firefox, user: str):
     else:
         brw.get(f"{manager.get_url() + user}")
 
-    followers = None
     friends = None
 
     wbw = WebDriverWait(brw, 10)
@@ -441,6 +441,7 @@ def out_file(parse, _input: list[str]):
 
 
 if __name__ == '__main__':
+    colorama.init()
     check_connection()
     fs = Fisher()
     manager = Manager()
