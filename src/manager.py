@@ -140,6 +140,14 @@ class Manager:
         """
         return self.__id_url_prefix__
 
+    def get_search_prefix(self):
+        """
+            Returns search prefix.
+
+            :return: search prefix
+        """
+        return self.__prefix_url_search__
+
     def get_email(self):
         """
             Returns default class email.

@@ -43,6 +43,9 @@ class Fisher:
                                      type=str, nargs=1,
                                      help='Replaces the USERNAME parameter with a user list in a txt.')
 
+        exclusive_group.add_argument("-S", "--search", action="store", required=False, metavar="USER",
+                                     help="It does a shallow search for the username.")
+
         parser.add_argument('-sf', '--scrape-family', action='store_true', required=False, dest='scrpfm',
                             help='If this parameter is passed, '
                                  'the information from family members will be scraped if available.')
@@ -142,6 +145,21 @@ def check_connection():
         requests.get("https://google.com")
     except requests.exceptions.ConnectionError:
         raise Exception("There is no internet connection.")
+
+
+def search(brw: Firefox, user: str):
+    parameter = user.replace(".", "%20")
+    brw.get(f"{manager.get_search_prefix()}{parameter}")
+    feed = brw.find_element_by_css_selector("[role='feed']")
+    profiles = feed.find_elements_by_css_selector("[role='article']")
+    for P in profiles:
+        title = P.find_element_by_tag_name('h2').text
+        link = P.find_element_by_tag_name('h2').find_element_by_css_selector("a[href]").get_attribute("href")
+        try:
+            info = P.find_element_by_class_name("jktsbyx5")
+        except selenium.common.exceptions.NoSuchElementException:
+            info = None
+        manager.add_data(user, {"Name": title, "Info": info, "Link": link})
 
 
 def extra_data(parse, brw: Firefox, user: str):
