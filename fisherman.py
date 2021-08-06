@@ -11,7 +11,7 @@ from zipfile import ZipFile, ZIP_DEFLATED
 import colorama
 import requests
 import requests.exceptions
-import selenium.common.exceptions
+from selenium.common import exceptions
 from selenium.webdriver import Firefox, FirefoxOptions, FirefoxProfile
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as ec
@@ -89,33 +89,19 @@ class Fisher:
 
 
 class Conditions:
-    def tag_name_in_element(element, tag_name):
-        sub_element = element.find_element_by_tag_name(tag_name)
-        if sub_element:
-            return sub_element
-        else:
-            return False
 
-    def class_name_in_element(element, class_name):
-        sub_element = element.find_element_by_class_name(class_name)
-        if sub_element:
-            return sub_element
-        else:
-            return False
+    class element_has_tag(object):
+        def __init__(self, tag_name, locator):
+            self.locator = locator
+            self.tag_name = tag_name
 
-    def css_selector_in_element(element, css_selector):
-        sub_element = element.find_element_by_css_selector(css_selector)
-        if sub_element:
-            return sub_element
-        else:
-            return False
+        def __call__(self, driver):
+            element = driver.find_element_by_tag_name(self.tag_name).find_element(*self.locator)
+            if element:
+                return element
+            else:
+                return False
 
-    def attribute_in_element(element, attribute):
-        sub_element = element.get_attribute(attribute)
-        if sub_element:
-            return sub_element
-        else:
-            return False
 
 def update():
     try:
@@ -180,16 +166,29 @@ def search(brw: Firefox, user: str):
     wbw = WebDriverWait(brw, 10)
     parameter = user.replace(".", "%20")
     brw.get(f"{manager.get_search_prefix()}{parameter}")
-    feed = wbw.until(ec.visibility_of_element_located((By.CSS_SELECTOR, "[role='feed']")))
-    profiles = feed.find_elements_by_css_selector("[role='article']")
-    for P in profiles:
-        title = wbw.until(Conditions.)
-        link = P.find_element_by_tag_name('h2').find_element_by_css_selector("a[href]").get_attribute("href")
+    profiles = wbw.until(ec.presence_of_all_elements_located((By.CSS_SELECTOR, "[role='article']")))
+    print(color_text("green", "Profiles found..."))
+    print()
+    for p in profiles:
         try:
-            info = wbw.until(Conditions.class_name_in_element(P, "jktsbyx5"))
-        except selenium.common.exceptions.NoSuchElementException:
+            title = p.find_element_by_tag_name("h2")
+        except exceptions.StaleElementReferenceException:
+            title = None
+
+        try:
+            link = str(title.find_element_by_css_selector("a[href]").get_attribute("href")).replace("\n", "")
+        except AttributeError:
+            link = None
+
+        try:
+            info = p.find_element_by_class_name("jktsbyx5").text
+        except (exceptions.NoSuchElementException, exceptions.StaleElementReferenceException):
             info = None
-        manager.add_data(user, {"Name": title, "Info": info, "Link": link})
+        
+        print(color_text("green", "Name:"), title.text)
+        print(color_text("green", "Info:"), info)
+        print(color_text("green", "user|id:"), link)
+        print()
 
 
 def extra_data(parse, brw: Firefox, user: str):
