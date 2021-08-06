@@ -22,7 +22,7 @@ from src.logo import name
 from src.manager import Manager, Xpaths
 
 module_name = 'FisherMan: Extract information from facebook profiles.'
-__version__ = "3.2.2"
+__version__ = "3.3.0"
 
 
 class Fisher:
@@ -467,7 +467,9 @@ if __name__ == '__main__':
     update()
     browser = init(ARGS)
     login(ARGS, browser)
-    if ARGS.txt:
+    if ARGS.search:
+        search(browser, ARGS.search)
+    elif ARGS.txt:
         scrape(ARGS, browser, upload_txt_file(ARGS.txt[0]))
     elif ARGS.username:
         scrape(ARGS, browser, ARGS.username)
