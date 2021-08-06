@@ -88,21 +88,6 @@ class Fisher:
         self.args = parser.parse_args()
 
 
-class Conditions:
-
-    class element_has_tag(object):
-        def __init__(self, tag_name, locator):
-            self.locator = locator
-            self.tag_name = tag_name
-
-        def __call__(self, driver):
-            element = driver.find_element_by_tag_name(self.tag_name).find_element(*self.locator)
-            if element:
-                return element
-            else:
-                return False
-
-
 def update():
     try:
         r = requests.get("https://raw.githubusercontent.com/Godofcoffe/FisherMan/main/fisherman.py")
@@ -212,9 +197,9 @@ def extra_data(parse, brw: Firefox, user: str):
     def collection_by_xpath(expected: Callable, xpath: str):
         try:
             wbw.until(expected((By.XPATH, xpath)))
-        except selenium.common.exceptions.NoSuchElementException:
+        except exceptions.NoSuchElementException:
             print(f'[{color_text("red", "-")}] non-existent element')
-        except selenium.common.exceptions.TimeoutException:
+        except exceptions.TimeoutException:
             if parse.verbose:
                 print(f'[{color_text("yellow", "-")}] timed out to get the extra data')
             else:
@@ -314,7 +299,7 @@ def scrape(parse, brw: Firefox, items: list[str]):
             try:
                 output = wbw.until(ec.presence_of_element_located((By.CLASS_NAME, 'f7vcsfb0')))
 
-            except selenium.common.exceptions.TimeoutException:
+            except exceptions.TimeoutException:
                 print(f'[{color_text("yellow", "-")}] time limit exceeded')
 
             except Exception as error:
@@ -358,7 +343,7 @@ def scrape(parse, brw: Firefox, items: list[str]):
                         output2 = wbw.until(ec.presence_of_element_located((By.CLASS_NAME,
                                                                             'f7vcsfb0')))
 
-                    except selenium.common.exceptions.TimeoutException:
+                    except exceptions.TimeoutException:
                         print(f'[{color_text("yellow", "-")}] time limit exceeded')
 
                     except Exception as error:
