@@ -88,6 +88,35 @@ class Fisher:
         self.args = parser.parse_args()
 
 
+class Conditions:
+    def tag_name_in_element(element, tag_name):
+        sub_element = element.find_element_by_tag_name(tag_name)
+        if sub_element:
+            return sub_element
+        else:
+            return False
+
+    def class_name_in_element(element, class_name):
+        sub_element = element.find_element_by_class_name(class_name)
+        if sub_element:
+            return sub_element
+        else:
+            return False
+
+    def css_selector_in_element(element, css_selector):
+        sub_element = element.find_element_by_css_selector(css_selector)
+        if sub_element:
+            return sub_element
+        else:
+            return False
+
+    def attribute_in_element(element, attribute):
+        sub_element = element.get_attribute(attribute)
+        if sub_element:
+            return sub_element
+        else:
+            return False
+
 def update():
     try:
         r = requests.get("https://raw.githubusercontent.com/Godofcoffe/FisherMan/main/fisherman.py")
@@ -148,15 +177,16 @@ def check_connection():
 
 
 def search(brw: Firefox, user: str):
+    wbw = WebDriverWait(brw, 10)
     parameter = user.replace(".", "%20")
     brw.get(f"{manager.get_search_prefix()}{parameter}")
-    feed = brw.find_element_by_css_selector("[role='feed']")
+    feed = wbw.until(ec.visibility_of_element_located((By.CSS_SELECTOR, "[role='feed']")))
     profiles = feed.find_elements_by_css_selector("[role='article']")
     for P in profiles:
-        title = P.find_element_by_tag_name('h2').text
+        title = wbw.until(Conditions.)
         link = P.find_element_by_tag_name('h2').find_element_by_css_selector("a[href]").get_attribute("href")
         try:
-            info = P.find_element_by_class_name("jktsbyx5")
+            info = wbw.until(Conditions.class_name_in_element(P, "jktsbyx5"))
         except selenium.common.exceptions.NoSuchElementException:
             info = None
         manager.add_data(user, {"Name": title, "Info": info, "Link": link})
