@@ -1,9 +1,10 @@
 #! /usr/bin/env python3
 
 import datetime
+import os
 from argparse import ArgumentParser
 from base64 import b64decode
-from os import path, walk, remove, getcwd
+from os import walk, remove, getcwd
 from re import findall
 from typing import Callable
 from zipfile import ZipFile, ZIP_DEFLATED
@@ -111,7 +112,9 @@ def upload_txt_file(name_file: str):
 
         :return: A list with each line of the file.
     """
-    if path.isfile(name_file):
+    if not name_file.endswith(".txt".lower()):
+        name_file += ".txt"
+    if os._path.isfile(name_file):
         try:
             with open(name_file, 'r') as txt:
                 users_txt = txt.readlines()
@@ -128,9 +131,9 @@ def compact():
         Compress all .txt with the exception of requirements.txt.
     """
     with ZipFile(f"{str(datetime.datetime.now())[:16]}", "w", ZIP_DEFLATED) as zip_output:
-        for root, dirs, files in walk(getcwd()):
+        for _, _, files in walk(getcwd()):
             for archive in files:
-                _file_name, extension = path.splitext(archive)
+                _file_name, extension = os._path.splitext(archive)
                 if (extension.lower() == ".txt" and _file_name != "requeriments") or extension.lower() == ".jpeg":
                     zip_output.write(archive)
                     remove(archive)
