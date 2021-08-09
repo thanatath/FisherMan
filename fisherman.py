@@ -52,12 +52,13 @@ class Fisher:
                                  'the information from family members will be scraped if available.')
 
         parser.add_argument("--specify", action="store", nargs="+", required=False, type=int,
-                            choices=[0, 1, 2, 3, 4, 5],
+                            choices=(0, 1, 2, 3, 4, 5),
                             help="Use the index number to return a specific part of the page. "
-                                 "about: 0, about_contact_and_basic_info: 1, "
-                                 "about_family_and_relationships: 2, "
-                                 "about_details: 3, "
-                                 "about_work_and_education: 4, "
+                                 "about: 0,"
+                                 "about_contact_and_basic_info: 1,"
+                                 "about_family_and_relationships: 2,"
+                                 "about_details: 3,"
+                                 "about_work_and_education: 4,"
                                  "about_places: 5.")
 
         parser.add_argument("-s", "--several", action="store_true", required=False,
@@ -465,14 +466,14 @@ def out_file(parse, _input: list[str]):
     """
     for usr in _input:
         file_name = rf"{usr}-{str(datetime.datetime.now())[:16]}.txt"
-        if parse.args.compact:
+        if parse.compact:
             file_name = usr + ".txt"
         with open(file_name, 'w+') as file:
             for data_list in manager.get_data()[usr]:
                 file.writelines(data_list)
 
     print(f'[{color_text("green", "+")}] .txt file(s) created')
-    if parse.args.compact:
+    if parse.compact:
         if parse.args.verbose:
             print(f'[{color_text("white", "*")}] preparing compaction...')
         compact()
