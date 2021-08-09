@@ -160,22 +160,25 @@ def search(brw: Firefox, user: str):
     for p in profiles:
         try:
             title = p.find_element_by_tag_name("h2")
-        except exceptions.StaleElementReferenceException:
-            title = None
+        except (exceptions.StaleElementReferenceException, AttributeError):
+            pass
+        else:
+            print(color_text("green", "Name:"), title.text)
+        
+        try:
+            info = p.find_element_by_class_name("jktsbyx5").text
+        except (exceptions.NoSuchElementException, exceptions.StaleElementReferenceException):
+            pass
+        else:
+            print(color_text("green", "Info:"), info)
 
         try:
             link = str(title.find_element_by_css_selector("a[href]").get_attribute("href")).replace("\n", "")
         except AttributeError:
-            link = None
+            pass
+        else:
+            print(color_text("green", "user|id:"), link)
 
-        try:
-            info = p.find_element_by_class_name("jktsbyx5").text
-        except (exceptions.NoSuchElementException, exceptions.StaleElementReferenceException):
-            info = None
-        
-        print(color_text("green", "Name:"), title.text)
-        print(color_text("green", "Info:"), info)
-        print(color_text("green", "user|id:"), link)
         print()
 
 
@@ -503,7 +506,8 @@ if __name__ == '__main__':
         elif ARGS.id:
             out_file(ARGS, ARGS.id)
     else:
-        print(color_text('green', 'Information found:'))
+        if ARGS.id or ARGS.username or ARGS.txt:
+            print(color_text('green', 'Information found:'))
         print('-' * 60)
         for profile in manager.get_all_keys()[2]:
             for data in manager.get_data()[profile]:
