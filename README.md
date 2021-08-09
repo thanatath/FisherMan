@@ -1,7 +1,7 @@
 # FisherMan
 
 [![GitHub license](https://img.shields.io/github/license/Godofcoffe/FisherMan)](https://github.com/Godofcoffe/FisherMan/blob/main/LICENSE)
-![badge](https://img.shields.io/badge/version-3.2.0-blue)
+![badge](https://img.shields.io/badge/version-3.3.0-blue)
 ![badge](https://img.shields.io/badge/python-%3E%3D3.8-orange)
 
 ### Search for public profile information on Facebook
@@ -30,11 +30,11 @@ $ python3 -m pip install -r requirements.txt
 ```
 $ python3 fisherman.py --help
 usage: fisherman.py [-h] [--version] [-u USERNAME [USERNAME ...] | -i ID
-                    [ID ...] | --use-txt TXT_FILE] [-sf]
+                    [ID ...] | --use-txt TXT_FILE | -S USER] [-sf]
                     [--specify {0,1,2,3,4,5} [{0,1,2,3,4,5} ...]] [-s] [-b]
                     [--email EMAIL] [--password PASSWORD] [-o] [-c] [-v]
 
-FisherMan: Extract information from facebook profiles. (Version 3.2.1)
+FisherMan: Extract information from facebook profiles. (Version 3.3.0)
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -45,13 +45,15 @@ optional arguments:
                         Set the profile identification number.
   --use-txt TXT_FILE    Replaces the USERNAME parameter with a user list in a
                         txt.
+  -S USER, --search USER
+                        It does a shallow search for the username.
   -sf, --scrape-family  If this parameter is passed, the information from
                         family members will be scraped if available.
   --specify {0,1,2,3,4,5} [{0,1,2,3,4,5} ...]
                         Use the index number to return a specific part of the
-                        page. about: 0, about_contact_and_basic_info: 1,
-                        about_family_and_relationships: 2, about_details: 3,
-                        about_work_and_education: 4, about_places: 5.
+                        page. about: 0,about_contact_and_basic_info:
+                        1,about_family_and_relationships: 2,about_details:
+                        3,about_work_and_education: 4,about_places: 5.
   -s, --several         Returns extra data like profile picture, number of
                         followers and friends.
   -b, --browser         Opens the browser/bot.
