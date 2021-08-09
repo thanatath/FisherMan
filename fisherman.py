@@ -474,7 +474,7 @@ def out_file(parse, _input: list[str]):
 
     print(f'[{color_text("green", "+")}] .txt file(s) created')
     if parse.compact:
-        if parse.args.verbose:
+        if parse.verbose:
             print(f'[{color_text("white", "*")}] preparing compaction...')
         compact()
 
