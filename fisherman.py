@@ -173,7 +173,7 @@ def search(brw: Firefox, user: str):
         except (exceptions.NoSuchElementException, exceptions.StaleElementReferenceException):
             pass
         else:
-            print(color_text("green", "Info:"), info)
+            print(color_text("green", "Info:"), str(info).replace("\n", ", "))
 
         try:
             link = str(title.find_element_by_css_selector("a[href]").get_attribute("href")).replace("\n", "")
