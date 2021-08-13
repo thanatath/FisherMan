@@ -2,6 +2,7 @@
 
 import datetime
 import os
+from time import sleep
 from argparse import ArgumentParser
 from base64 import b64decode
 from os import walk, remove, getcwd
@@ -155,6 +156,7 @@ def search(brw: Firefox, user: str):
     wbw = WebDriverWait(brw, 10)
     parameter = user.replace(".", "%20")
     brw.get(f"{manager.get_search_prefix()}{parameter}")
+    sleep(1)
     profiles = wbw.until(ec.presence_of_all_elements_located((By.CSS_SELECTOR, "[role='article']")))
     print(color_text("green", "Profiles found..."))
     print()
@@ -175,7 +177,7 @@ def search(brw: Firefox, user: str):
 
         try:
             link = str(title.find_element_by_css_selector("a[href]").get_attribute("href")).replace("\n", "")
-        except AttributeError:
+        except (AttributeError, UnboundLocalError):
             pass
         else:
             print(color_text("green", "user|id:"), link)
