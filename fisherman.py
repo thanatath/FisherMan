@@ -23,7 +23,7 @@ from src.logo import name
 from src.manager import Manager, Xpaths
 
 module_name = 'FisherMan: Extract information from facebook profiles.'
-__version__ = "3.3.0"
+__version__ = "3.3.1"
 
 
 class Fisher:
@@ -161,7 +161,7 @@ def search(brw: Firefox, user: str):
     for p in profiles:
         try:
             title = p.find_element_by_tag_name("h2")
-        except (exceptions.StaleElementReferenceException, AttributeError):
+        except (exceptions.StaleElementReferenceException, AttributeError, exceptions.NoSuchElementException):
             pass
         else:
             print(color_text("green", "Name:"), title.text)
