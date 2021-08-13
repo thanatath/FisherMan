@@ -189,15 +189,14 @@ def search(brw: Firefox, user: str):
         print()
 
 
-def extra_data(parse, brw: Firefox, user: str):
+def extra_data(brw: Firefox, user: str):
     """
         Save other data outside the about user page.
 
-        :param parse: ArgParse instance namespace arguments to change code flow.
         :param brw: Instance of WebDriver.
         :param user: username to search.
     """
-    if parse.id:
+    if ARGS.id:
         brw.get(f"{manager.get_id_prefix() + user}")
     else:
         brw.get(f"{manager.get_url() + user}")
@@ -213,7 +212,7 @@ def extra_data(parse, brw: Firefox, user: str):
         except exceptions.NoSuchElementException:
             print(f'[{color_text("red", "-")}] non-existent element')
         except exceptions.TimeoutException:
-            if parse.verbose:
+            if ARGS.verbose:
                 print(f'[{color_text("yellow", "-")}] timed out to get the extra data')
             else:
                 print(f'[{color_text("yellow", "-")}] time limit exceeded')
@@ -240,9 +239,9 @@ def extra_data(parse, brw: Firefox, user: str):
     else:
         friends = element
 
-    if parse.txt:
+    if ARGS.txt:
         _file_name = rf"extraData-{user}-{str(datetime.datetime.now())[:16]}.txt"
-        if parse.compact:
+        if ARGS.compact:
             _file_name = f"extraData-{user}.txt"
         with open(_file_name, "w+") as extra:
             extra.write(f"Bio: {bio}")
@@ -253,11 +252,10 @@ def extra_data(parse, brw: Firefox, user: str):
         manager.add_extras(user, {"Bio": bio, "Followers": followers, "Friends": friends})
 
 
-def scrape(parse, brw: Firefox, items: list[str]):
+def scrape(brw: Firefox, items: list[str]):
     """
         Extract certain information from the html of an item in the list provided.
 
-        :param parse: ArgParse instance namespace arguments to change code flow.
         :param brw: Instance of WebDriver.
         :param items: List of users to apply to scrape.
 
@@ -293,19 +291,19 @@ def scrape(parse, brw: Firefox, items: list[str]):
         print(f'[{color_text("white", "*")}] Coming in {prefix + usrs}')
 
         # here modifies the branch list to iterate only the parameter items --specify
-        if parse.specify:
+        if ARGS.specify:
             temp_branch = []
-            for index in parse.specify:
+            for index in ARGS.specify:
                 temp_branch.append(branch[index])
-                if parse.verbose:
+                if ARGS.verbose:
                     print(f'[{color_text("green", "+")}] branch {index} added to url')
             branch = temp_branch
 
         # search for extra data
-        if parse.several:
-            if parse.verbose:
+        if ARGS.several:
+            if ARGS.verbose:
                 print(f'[{color_text("blue", "+")}] getting extra data...')
-            extra_data(parse, brw, usrs)
+            extra_data(ARGS, brw, usrs)
 
         for bn in branch if not usrs.isnumeric() else branch_id:
             brw.get(f'{prefix + usrs + bn}')
@@ -317,10 +315,10 @@ def scrape(parse, brw: Firefox, items: list[str]):
 
             except Exception as error:
                 print(f'[{color_text("red", "-")}] class f7vcsfb0 did not return')
-                if parse.verbose:
+                if ARGS.verbose:
                     print(color_text("yellow", f"error details:\n{error}"))
             else:
-                if parse.verbose:
+                if ARGS.verbose:
                     print(f'[{color_text("blue", "+")}] Collecting data from: div.f7vcsfb0')
                 else:
                     print(f'[{color_text("blue", "+")}] collecting data ...')
@@ -329,7 +327,7 @@ def scrape(parse, brw: Firefox, items: list[str]):
                 # check to start scrape family members
                 if "about_family_and_relationships" in bn:
                     members = output.find_elements(By.TAG_NAME, "a")
-                    if members and parse.scrpfm:
+                    if members and ARGS.scrpfm:
                         members_list = []
                         for link in members:
                             members_list.append(link.get_attribute('href'))
@@ -345,10 +343,10 @@ def scrape(parse, brw: Firefox, items: list[str]):
                 temp_data.append(div)
 
                 # search for extra data
-                if parse.several:
-                    if parse.verbose:
+                if ARGS.several:
+                    if ARGS.verbose:
                         print(f'[{color_text("blue", "+")}] getting extra data...')
-                    extra_data(parse, brw, memb)
+                    extra_data(ARGS, brw, memb)
 
                 for bn in branch if not memb.isnumeric() else branch_id:
                     brw.get(f'{memb + bn}')
@@ -361,10 +359,10 @@ def scrape(parse, brw: Firefox, items: list[str]):
 
                     except Exception as error:
                         print(f'[{color_text("red", "-")}] class f7vcsfb0 did not return')
-                        if parse.verbose:
+                        if ARGS.verbose:
                             print(color_text("yellow", f"error details:\n{error}"))
                     else:
-                        if parse.verbose:
+                        if ARGS.verbose:
                             print(f'[{color_text("blue", "+")}] Collecting data from: div.f7vcsfb0')
                         else:
                             print(f'[{color_text("blue", "+")}] collecting data ...')
@@ -374,11 +372,10 @@ def scrape(parse, brw: Firefox, items: list[str]):
         manager.add_data(usrs, temp_data)
 
 
-def login(parse, brw: Firefox):
+def login(brw: Firefox):
     """
         Execute the login on the page.
 
-        :param parse: ArgParse instance namespace arguments to change code flow.
         :param brw: Instance of WebDriver.
     """
     brw.get(manager.get_url())
@@ -392,8 +389,8 @@ def login(parse, brw: Firefox):
     pwd.clear()
 
     # custom accounts will only be applied if both fields are not empty
-    if parse.email is None or parse.args.pwd is None:
-        if parse.verbose:
+    if ARGS.email is None or ARGS.args.pwd is None:
+        if ARGS.verbose:
             print(f'[{color_text("white", "*")}] adding fake email: {manager.get_email()}')
             email.send_keys(manager.get_email())
             print(f'[{color_text("white", "*")}] adding password: ...')
@@ -403,25 +400,23 @@ def login(parse, brw: Firefox):
             email.send_keys(manager.get_email())
             pwd.send_keys(b64decode(manager.get_pass()).decode("utf-8"))
     else:
-        if parse.verbose:
-            print(f'adding email: {parse.email}')
-            email.send_keys(parse.args.email)
+        if ARGS.verbose:
+            print(f'adding email: {ARGS.email}')
+            email.send_keys(ARGS.args.email)
             print('adding password: ...')
-            pwd.send_keys(parse.pwd)
+            pwd.send_keys(ARGS.pwd)
         else:
-            print(f'logging into the account: {parse.email}')
-            email.send_keys(parse.email)
-            pwd.send_keys(parse.pwd)
+            print(f'logging into the account: {ARGS.email}')
+            email.send_keys(ARGS.email)
+            pwd.send_keys(ARGS.pwd)
     ok.click()
-    if parse.verbose:
+    if ARGS.verbose:
         print(f'[{color_text("green", "+")}] successfully logged in')
 
 
-def init(parse):
+def init():
     """
         Start the webdriver.
-
-        :param parse: ArgParse instance namespace arguments to change code flow.
     """
 
     # browser settings
@@ -443,13 +438,13 @@ def init(parse):
     _options.add_argument("--disable-plugins-discovery")
 
     configs = {"firefox_profile": _profile, "options": _options}
-    if not parse.browser:
-        if parse.verbose:
+    if not ARGS.browser:
+        if ARGS.verbose:
             print(f'[{color_text("blue", "*")}] Starting in hidden mode')
         configs["options"].add_argument("--headless")
         configs["options"].add_argument("--start-maximized")
 
-    if parse.verbose:
+    if ARGS.verbose:
         print(f'[{color_text("white", "*")}] Opening browser ...')
     try:
         engine = Firefox(**configs)
@@ -463,24 +458,23 @@ def init(parse):
         return engine
 
 
-def out_file(parse, _input: list[str]):
+def out_file(_input: list[str]):
     """
         Create the .txt output of the -o parameter.
 
-        :param parse: ArgParse instance namespace arguments to change code flow.
         :param _input: The list that will be iterated over each line of the file, in this case it is the list of users.
     """
     for usr in _input:
         file_name = rf"{usr}-{str(datetime.datetime.now())[:16]}.txt"
-        if parse.compact:
+        if ARGS.compact:
             file_name = usr + ".txt"
         with open(file_name, 'w+') as file:
             for data_list in manager.get_data()[usr]:
                 file.writelines(data_list)
 
     print(f'[{color_text("green", "+")}] .txt file(s) created')
-    if parse.compact:
-        if parse.verbose:
+    if ARGS.compact:
+        if ARGS.verbose:
             print(f'[{color_text("white", "*")}] preparing compaction...')
         compact()
 
@@ -492,26 +486,26 @@ if __name__ == '__main__':
     manager = Manager()
     ARGS = fs.args
     update()
-    browser = init(ARGS)
-    login(ARGS, browser)
+    browser = init()
+    login(browser)
     if ARGS.search:
         search(browser, ARGS.search)
     elif ARGS.txt:
-        scrape(ARGS, browser, upload_txt_file(ARGS.txt[0]))
+        scrape(browser, upload_txt_file(ARGS.txt[0]))
     elif ARGS.username:
-        scrape(ARGS, browser, ARGS.username)
+        scrape(browser, ARGS.username)
     elif ARGS.id:
-        scrape(ARGS, browser, ARGS.id)
+        scrape(browser, ARGS.id)
     browser.quit()
     print()
 
     if ARGS.out:  # .txt output creation
         if ARGS.username:
-            out_file(ARGS, ARGS.username)
+            out_file(ARGS.username)
         elif ARGS.txt:
-            out_file(ARGS, ARGS.txt)
+            out_file(ARGS.txt)
         elif ARGS.id:
-            out_file(ARGS, ARGS.id)
+            out_file(ARGS.id)
     else:
         if ARGS.id or ARGS.username or ARGS.txt:
             print(color_text('green', 'Information found:'))
