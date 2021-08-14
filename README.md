@@ -1,7 +1,7 @@
 # FisherMan
 
 [![GitHub license](https://img.shields.io/github/license/Godofcoffe/FisherMan)](https://github.com/Godofcoffe/FisherMan/blob/main/LICENSE)
-![badge](https://img.shields.io/badge/version-3.3.0-blue)
+![badge](https://img.shields.io/badge/version-3.3.1-blue)
 ![badge](https://img.shields.io/badge/python-%3E%3D3.8-orange)
 
 ### Search for public profile information on Facebook
@@ -12,7 +12,7 @@
 
 ```
 # clone the repo
-$ git clone https://github.com/Godofcoffe/FisherMan.git
+$ git clone https://github.com/Godofcoffe/FisherMan
 
 # change the working directory to FisherMan
 $ cd FisherMan
@@ -34,7 +34,7 @@ usage: fisherman.py [-h] [--version] [-u USERNAME [USERNAME ...] | -i ID
                     [--specify {0,1,2,3,4,5} [{0,1,2,3,4,5} ...]] [-s] [-b]
                     [--email EMAIL] [--password PASSWORD] [-o] [-c] [-v]
 
-FisherMan: Extract information from facebook profiles. (Version 3.3.0)
+FisherMan: Extract information from facebook profiles. (Version 3.3.1)
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -46,7 +46,8 @@ optional arguments:
   --use-txt TXT_FILE    Replaces the USERNAME parameter with a user list in a
                         txt.
   -S USER, --search USER
-                        It does a shallow search for the username.
+                        It does a shallow search for the username. Replace the
+                        spaces with '.'(period).
   -sf, --scrape-family  If this parameter is passed, the information from
                         family members will be scraped if available.
   --specify {0,1,2,3,4,5} [{0,1,2,3,4,5} ...]
