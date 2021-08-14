@@ -2,11 +2,11 @@
 
 import datetime
 import os
-from time import sleep
 from argparse import ArgumentParser
 from base64 import b64decode
 from os import walk, remove, getcwd
 from re import findall
+from time import sleep
 from typing import Callable
 from zipfile import ZipFile, ZIP_DEFLATED
 
@@ -46,7 +46,8 @@ class Fisher:
                                      help='Replaces the USERNAME parameter with a user list in a txt.')
 
         exclusive_group.add_argument("-S", "--search", action="store", required=False, metavar="USER",
-                                     help="It does a shallow search for the username.")
+                                     help="It does a shallow search for the username. "
+                                          "Replace the spaces with '.'(period).")
 
         parser.add_argument('-sf', '--scrape-family', action='store_true', required=False, dest='scrpfm',
                             help='If this parameter is passed, '
@@ -303,7 +304,7 @@ def scrape(brw: Firefox, items: list[str]):
         if ARGS.several:
             if ARGS.verbose:
                 print(f'[{color_text("blue", "+")}] getting extra data...')
-            extra_data(ARGS, brw, usrs)
+            extra_data(brw, usrs)
 
         for bn in branch if not usrs.isnumeric() else branch_id:
             brw.get(f'{prefix + usrs + bn}')
@@ -346,7 +347,7 @@ def scrape(brw: Firefox, items: list[str]):
                 if ARGS.several:
                     if ARGS.verbose:
                         print(f'[{color_text("blue", "+")}] getting extra data...')
-                    extra_data(ARGS, brw, memb)
+                    extra_data(brw, memb)
 
                 for bn in branch if not memb.isnumeric() else branch_id:
                     brw.get(f'{memb + bn}')
