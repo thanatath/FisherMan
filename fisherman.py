@@ -339,7 +339,7 @@ def scrape(brw: Firefox, items: list[str]):
                 else:
                     if ARGS.quiet:
                         rest += 1
-                        print("\033[K", f'[{color_text("blue", "+")}] collecting data ({rest}, {tot})', end="\r")
+                        print("\033[K", f'[{color_text("blue", "+")}] collecting data ({rest}:{tot})', end="\r")
                     else:
                         print(f'[{color_text("blue", "+")}] collecting data ...')
                 temp_data.append(output.text)
@@ -389,7 +389,7 @@ def scrape(brw: Firefox, items: list[str]):
                         else:
                             if ARGS.quiet:
                                 rest += 1
-                                print("\033[K", f'[{color_text("blue", "+")}] collecting data ({rest}, {tot})',
+                                print("\033[K", f'[{color_text("blue", "+")}] collecting data ({rest}:{tot})',
                                       end="\r")
                             else:
                                 print(f'[{color_text("blue", "+")}] collecting data ...')
@@ -536,12 +536,15 @@ if __name__ == '__main__':
     else:
         if ARGS.id or ARGS.username or ARGS.txt:
             print(color_text('green', 'Information found:'))
-        print('-' * 60)
+        count_profiles = len(manager.get_all_keys()[2])
         for profile in manager.get_all_keys()[2]:
             for data in manager.get_data()[profile]:
-                print(data)
-                print()
                 print('-' * 60)
+                print(data)
+            if count_profiles > 1:
+                print()
+                print("=" * 60)
+                print()
 
             if ARGS.several:
                 print("EXTRAS:")
