@@ -24,13 +24,14 @@ from src.logo import name
 from src.manager import Manager, Xpaths
 
 module_name = 'FisherMan: Extract information from facebook profiles.'
-__version__ = "3.3.1"
+__version__ = "3.4.0"
 
 
 class Fisher:
     def __init__(self):
         parser = ArgumentParser(description=f'{module_name} (Version {__version__})')
         exclusive_group = parser.add_mutually_exclusive_group()
+        exclusive_group2 = parser.add_mutually_exclusive_group()
 
         parser.add_argument('--version', action='version', version=f'%(prog)s {__version__}',
                             help='Shows the current version of the program.')
@@ -85,11 +86,18 @@ class Fisher:
         parser.add_argument("-c", "--compact", action="store_true", required=False,
                             help="Compress all .txt files. Use together with -o.")
 
-        parser.add_argument('-v', '-d', '--verbose', '--debug', action='store_true', required=False,
-                            help='It shows in detail the data search process.')
+        exclusive_group2.add_argument('-v', '-d', '--verbose', '--debug', action='store_true', required=False,
+                                      help='It shows in detail the data search process.')
 
-        print(color_text('cyan', name))
+        exclusive_group2.add_argument("-q", "--quiet", action="store_true", required=False,
+                                      help="Eliminates and simplifies some script outputs for "
+                                           "a simpler and more discrete visualization.")
+
         self.args = parser.parse_args()
+        if not self.args.quiet:
+            print(color_text('cyan', name))
+        else:
+            print("Starting FisherMan...")
 
 
 def update():
@@ -100,9 +108,12 @@ def update():
         local_version = __version__
 
         if remote_version != local_version:
-            print(color_text('yellow', "Update Available!\n" +
-                             f"You are running version {local_version}. Version {remote_version} "
-                             f"is available at https://github.com/Godofcoffe/FisherMan"))
+            if not ARGS.quiet:
+                print(color_text('yellow', "Update Available!\n" +
+                                 f"You are running version {local_version}. Version {remote_version} "
+                                 f"is available at https://github.com/Godofcoffe/FisherMan"))
+            else:
+                print(color_text("yellow", "Update Available!"))
     except Exception as error:
         print(color_text('red', f"A problem occured while checking for an update: {error}"))
 
@@ -172,7 +183,7 @@ def search(brw: Firefox, user: str):
             pass
         else:
             print(color_text("green", "Name:"), title.text)
-        
+
         try:
             info = p.find_element_by_class_name("jktsbyx5").text
         except (exceptions.NoSuchElementException, exceptions.StaleElementReferenceException):
@@ -222,7 +233,8 @@ def extra_data(brw: Firefox, user: str):
 
     img = collection_by_xpath(ec.element_to_be_clickable, xpaths.picture)
     img.screenshot(f"{user}_profile_picture.png")
-    print(f'[{color_text("green", "+")}] picture saved')
+    if not ARGS.quiet:
+        print(f'[{color_text("green", "+")}] picture saved')
 
     element = collection_by_xpath(ec.visibility_of_element_located, xpaths.bio).text
     if element:
@@ -289,7 +301,8 @@ def scrape(brw: Firefox, items: list[str]):
     for usrs in items:
         prefix, usrs = thin_out(usrs)
         temp_data = []
-        print(f'[{color_text("white", "*")}] Coming in {prefix + usrs}')
+        if not ARGS.quiet:
+            print(f'[{color_text("white", "*")}] Coming in {prefix + usrs}')
 
         # here modifies the branch list to iterate only the parameter items --specify
         if ARGS.specify:
@@ -306,6 +319,8 @@ def scrape(brw: Firefox, items: list[str]):
                 print(f'[{color_text("blue", "+")}] getting extra data...')
             extra_data(brw, usrs)
 
+        tot = len(branch)
+        rest = 0
         for bn in branch if not usrs.isnumeric() else branch_id:
             brw.get(f'{prefix + usrs + bn}')
             try:
@@ -322,7 +337,11 @@ def scrape(brw: Firefox, items: list[str]):
                 if ARGS.verbose:
                     print(f'[{color_text("blue", "+")}] Collecting data from: div.f7vcsfb0')
                 else:
-                    print(f'[{color_text("blue", "+")}] collecting data ...')
+                    if ARGS.quiet:
+                        rest += 1
+                        print("\033[K", f'[{color_text("blue", "+")}] collecting data ({rest}, {tot})', end="\r")
+                    else:
+                        print(f'[{color_text("blue", "+")}] collecting data ...')
                 temp_data.append(output.text)
 
                 # check to start scrape family members
@@ -340,7 +359,8 @@ def scrape(brw: Firefox, items: list[str]):
 
             for memb in manager.get_affluent()[usrs]:
                 print()
-                print(f'[{color_text("white", "*")}] Coming in {memb}')
+                if not ARGS.quiet:
+                    print(f'[{color_text("white", "*")}] Coming in {memb}')
                 temp_data.append(div)
 
                 # search for extra data
@@ -349,6 +369,7 @@ def scrape(brw: Firefox, items: list[str]):
                         print(f'[{color_text("blue", "+")}] getting extra data...')
                     extra_data(brw, memb)
 
+                rest = 0
                 for bn in branch if not memb.isnumeric() else branch_id:
                     brw.get(f'{memb + bn}')
                     try:
@@ -366,7 +387,12 @@ def scrape(brw: Firefox, items: list[str]):
                         if ARGS.verbose:
                             print(f'[{color_text("blue", "+")}] Collecting data from: div.f7vcsfb0')
                         else:
-                            print(f'[{color_text("blue", "+")}] collecting data ...')
+                            if ARGS.quiet:
+                                rest += 1
+                                print("\033[K", f'[{color_text("blue", "+")}] collecting data ({rest}, {tot})',
+                                      end="\r")
+                            else:
+                                print(f'[{color_text("blue", "+")}] collecting data ...')
                         temp_data.append(output2.text)
 
         # complete addition of all data
