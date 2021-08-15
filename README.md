@@ -1,7 +1,7 @@
 # FisherMan
 
 [![GitHub license](https://img.shields.io/github/license/Godofcoffe/FisherMan)](https://github.com/Godofcoffe/FisherMan/blob/main/LICENSE)
-![badge](https://img.shields.io/badge/version-3.3.1-blue)
+![badge](https://img.shields.io/badge/version-3.4.0-blue)
 ![badge](https://img.shields.io/badge/python-%3E%3D3.8-orange)
 
 ### Search for public profile information on Facebook
@@ -32,9 +32,9 @@ $ python3 fisherman.py --help
 usage: fisherman.py [-h] [--version] [-u USERNAME [USERNAME ...] | -i ID
                     [ID ...] | --use-txt TXT_FILE | -S USER] [-sf]
                     [--specify {0,1,2,3,4,5} [{0,1,2,3,4,5} ...]] [-s] [-b]
-                    [--email EMAIL] [--password PASSWORD] [-o] [-c] [-v]
+                    [--email EMAIL] [--password PASSWORD] [-o] [-c] [-v | -q]
 
-FisherMan: Extract information from facebook profiles. (Version 3.3.1)
+FisherMan: Extract information from facebook profiles. (Version 3.4.0)
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -67,6 +67,8 @@ optional arguments:
   -c, --compact         Compress all .txt files. Use together with -o.
   -v, -d, --verbose, --debug
                         It shows in detail the data search process.
+  -q, --quiet           Eliminates and simplifies some script outputs for a
+                        simpler and more discrete visualization.
 ```
 
 To search for a user:
