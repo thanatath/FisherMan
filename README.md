@@ -19,11 +19,13 @@ $ cd FisherMan
 
 # install the requirements
 $ python3 -m pip install -r requirements.txt
+
+# dependency:
+ you need to install geckodriver on your machine,
+ download the binary from the official mozilla repo:
+ https://github.com/mozilla/geckodriver/releases/latest
+ extract and copy the binary, i recommend placing it in /usr/bin
 ```
-
-## Pre-requisites
-
-* Make sure you have the executable "geckodriver" installed on your machine.
 
 ## Usage
 
@@ -113,8 +115,21 @@ python3 fisherman.py --email youremail@email.com --password yourpass
 
 * To get additional things like profile picture, how many followers and how many friends:
   ```
-  python3 fisherman.py -u name -s
+  python3 fisherman.py -u name [-s | --several]
   ```
+  
+* For a short search by people's name:
+  ```
+  python3 fisherman.py [-S | --search] foo
+  ```
+  Replace the spaces in the name with "."(periods).
+  The script still returns an average of 15 profiles.
+  
+* For a minimalist execution:
+  ```
+  python3 fisherman.py [-q | --quiet]
+  ```
+  Considerably reduces the script's output texts and, by convention, improves performance.
 
 ## *This tool only extracts information that is public, not use for private or illegal purposes.*
 
