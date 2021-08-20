@@ -459,7 +459,7 @@ def init():
     _options.add_argument("--incognito")
 
     # arguments
-    _options.add_argument('--disable-blink-features=AutomationControlled')
+    #_options.add_argument('--disable-blink-features=AutomationControlled')
     _options.add_argument("--disable-extensions")
     # _options.add_argument('--profile-directory=Default')
     _options.add_argument("--disable-plugins-discovery")
